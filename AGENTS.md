@@ -168,6 +168,7 @@ Use `ux-designer` when:
 - Use runtime validation at process boundaries.
 - Avoid framework-heavy abstractions before repeated patterns exist.
 - Optimize for clarity that AI agents can maintain.
+- Follow the development principles in `docs/development-workflow.md`.
 
 ## Delivery Workflow
 

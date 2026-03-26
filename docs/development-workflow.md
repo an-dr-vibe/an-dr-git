@@ -22,6 +22,102 @@ The same principle applies to code, UI, UX, and documentation.
 4. User-visible behavior changes must update both developer docs and user docs.
 5. Coverage is a gate, not a nice-to-have.
 
+## Development Principles
+
+These principles are the default engineering standard for the repo.
+
+### SOLID
+
+Use SOLID as a design discipline for maintainable modules and boundaries.
+
+In this repo, that means:
+
+- keep services focused on one responsibility
+- depend on explicit interfaces and contracts
+- design components so they can be extended without fragile rewrites
+- avoid leaking renderer, Git, and platform concerns across layers
+
+### Clean Architecture
+
+Protect the main boundaries of the app:
+
+- UI depends on typed contracts, not Git execution details
+- application services coordinate behavior
+- Git and platform integrations stay behind clear adapters
+- shared domain types remain stable and explicit
+
+### DRY
+
+Do not duplicate logic, workflows, or contract definitions without a reason.
+
+Apply DRY carefully:
+
+- remove accidental duplication
+- keep useful clarity
+- do not create premature abstractions just to avoid two similar lines of code
+
+### Test-Driven Development
+
+TDD is the default for logic-heavy and behavior-critical work.
+
+Expected pattern:
+
+1. define the behavior
+2. write or update a failing test when practical
+3. implement the smallest change that makes it pass
+4. refactor safely under test coverage
+
+If strict TDD is not practical for a change, the verification loop must still be explicit.
+
+### Clean Code
+
+Code should be:
+
+- readable
+- intention-revealing
+- small in scope
+- explicit in error handling
+- easy to test and change
+
+Avoid cleverness that reduces maintainability.
+
+### Documentation As Code
+
+Documentation is part of the implementation.
+
+Rules:
+
+- update docs in the same change set as the behavior
+- version docs with the code
+- keep docs operational and reviewable
+- treat stale docs as defects
+
+### Semantic Versioning
+
+Use Semantic Versioning for releases:
+
+- MAJOR for breaking changes
+- MINOR for backward-compatible features
+- PATCH for backward-compatible fixes
+
+Do not make versioning decisions casually; version numbers must reflect real compatibility impact.
+
+### Conventional Commits
+
+Use Conventional Commits for commit messages where practical.
+
+Preferred format:
+
+- `feat: ...`
+- `fix: ...`
+- `docs: ...`
+- `refactor: ...`
+- `test: ...`
+- `build: ...`
+- `chore: ...`
+
+This supports clearer history, automation, and release notes.
+
 ## Standard Feedback Loops
 
 ### Code Loop
