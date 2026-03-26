@@ -54,7 +54,7 @@ Phase 0 must deliver:
 
 ## Backlog Order
 
-### Slice 0.1: Tooling Scaffold
+### Slice 0.1: Tooling Scaffold — Done
 
 Goal:
 
@@ -84,7 +84,7 @@ Verification:
 - quality gate passes
 - baseline tests execute and produce coverage output
 
-### Slice 0.2: App Shell
+### Slice 0.2: App Shell — Done
 
 Goal:
 
@@ -258,7 +258,7 @@ Verification:
 - keyboard verification
 - visual review against the product direction
 
-### Slice 0.9: Packaging And Verification Artifacts
+### Slice 0.9: Packaging And Verification Artifacts — Done
 
 Goal:
 
