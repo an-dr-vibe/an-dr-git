@@ -10,7 +10,11 @@ Use it to guide:
 - implementation tradeoffs
 - review decisions
 
-## The Five Rules
+## The Rules
+
+0. Reasoning and evidence over tradition.
+   Choose approaches because they are logical, current, and proven in practice.
+   When modernity and maturity conflict, prefer the option with stronger evidence, lower risk, and clearer long-term maintainability.
 
 1. Truth over convenience.
    The app must reflect real Git behavior, not a simplified fiction.
@@ -29,4 +33,4 @@ Use it to guide:
 
 ## How To Use It
 
-When choosing between options, prefer the one that better matches these five rules.
+When choosing between options, prefer the one that better matches these rules.
