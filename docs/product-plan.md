@@ -26,6 +26,12 @@ The product vision is:
 - feel like a premium developer tool rather than a generic admin shell
 - remain cross-platform and AI-friendly to develop over time
 
+## Project Philosophy
+
+The canonical philosophy lives in `PHILOSOPHY.md`.
+
+It drives product direction and team behavior.
+
 ## Product Positioning
 
 The product should sit in this space:

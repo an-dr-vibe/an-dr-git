@@ -29,7 +29,14 @@ Current target feature set:
 
 Primary reference:
 
+- `PHILOSOPHY.md`
 - `docs/architecture.md`
+
+## Project Philosophy
+
+The canonical philosophy lives in `PHILOSOPHY.md`.
+
+Use it as the short decision filter for team behavior and product direction.
 
 ## Core Decisions
 
@@ -174,6 +181,67 @@ For any non-trivial task:
 6. verify with unit, integration, or manual evidence
 7. document any architectural deviation in `docs/architecture.md`
 
+## Feedback Loop Policy
+
+Every meaningful change must have a feedback loop. "Implemented" is not enough.
+
+### Code Loop
+
+Required sequence:
+
+1. define or restate acceptance criteria
+2. implement the smallest useful slice
+3. add or update unit tests in the same change
+4. run the local quality gate
+5. review failures, regressions, and coverage
+6. update developer and user-facing documentation when behavior changes
+
+### UI Loop
+
+Required sequence:
+
+1. define the screen or component goal
+2. define the state matrix: normal, loading, empty, error, dense-data, and edge states
+3. implement the UI
+4. verify hierarchy, readability, keyboard flow, and state coverage
+5. document the intended behavior and visual decisions
+
+### UX Loop
+
+Required sequence:
+
+1. define the user task and safe outcome
+2. define the happy path and failure path
+3. walk the flow against real Git states and edge cases
+4. verify that the flow is clear without hiding Git truth
+5. document the workflow and any open tradeoffs
+
+### Documentation Loop
+
+Every user-visible or developer-visible change must update the relevant docs in the same change set.
+
+Developer-side docs include:
+
+- architecture
+- product plan
+- development workflow
+- automation and quality-gate docs
+
+User-side docs include:
+
+- README
+- future user guides, help pages, onboarding, and release notes
+
+### Automation Entry Points
+
+The repo standardizes on cross-platform PowerShell scripts executed with `pwsh`.
+
+Current entry points:
+
+- `scripts/check-docs.ps1`
+- `scripts/coverage-gate.ps1`
+- `scripts/quality-gate.ps1`
+
 ## Definition Of Done
 
 A task is done when:
@@ -181,6 +249,7 @@ A task is done when:
 - the implementation matches the current architecture
 - error paths are handled explicitly
 - tests cover the new behavior or the gap is clearly documented
+- required feedback loops for code, UI, UX, and docs are closed
 - user-visible failures include enough context to debug
 - docs are updated when contracts or operating rules change
 
