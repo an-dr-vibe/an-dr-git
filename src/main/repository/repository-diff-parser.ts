@@ -237,9 +237,7 @@ function parseDiffFile(
     if (
       line.startsWith("index ") ||
       line.startsWith("similarity index ") ||
-      line.startsWith("dissimilarity index ") ||
-      line.startsWith("new mode ") ||
-      line.startsWith("old mode ")
+      line.startsWith("dissimilarity index ")
     ) {
       index += 1;
       continue;
@@ -249,24 +247,12 @@ function parseDiffFile(
     index += 1;
   }
 
-  if (markers.has("deleted-file") && changeType === "modified") {
-    changeType = "deleted";
-  }
-
-  if (markers.has("new-file") && changeType === "modified") {
-    changeType = "added";
-  }
-
   if (markers.has("rename")) {
     changeType = "renamed";
   }
 
   if (markers.has("copy")) {
     changeType = "copied";
-  }
-
-  if (markers.has("mode-change") && changeType === "modified") {
-    changeType = "mode-changed";
   }
 
   return {

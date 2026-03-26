@@ -160,4 +160,124 @@ describe("repository diff parser", () => {
     expect(document.parseState).toBe("partial");
     expect(document.warnings.some((warning) => warning.includes("Unsupported hunk header"))).toBe(true);
   });
+
+  it("tolerates blank lines between the diff --git header and the --- line", () => {
+    const document = parseRepositoryDiffDocument(
+      "src/spaced.ts",
+      [
+        "diff --git a/src/spaced.ts b/src/spaced.ts",
+        "",
+        "--- a/src/spaced.ts",
+        "+++ b/src/spaced.ts",
+        "@@ -1,1 +1,1 @@",
+        "-old",
+        "+new",
+        "",
+      ].join("\n")
+    );
+
+    expect(document.parseState).toBe("parsed");
+    expect(document.files[0]?.hunks[0]?.lines).toHaveLength(2);
+  });
+
+  it("collects non-empty binary content lines into the file header", () => {
+    const document = parseRepositoryDiffDocument(
+      "font.ttf",
+      [
+        "diff --git a/font.ttf b/font.ttf",
+        "index 0000000..abcdef1 100644",
+        "GIT binary patch",
+        "literal 512",
+        "zc$|E$00031ZW&i&Lqkql",
+        "",
+      ].join("\n")
+    );
+
+    expect(document.parseState).toBe("binary");
+    expect(document.files[0]?.markers).toContain("binary");
+    expect(document.files[0]?.headerLines.length).toBeGreaterThan(0);
+  });
+
+  it("records a warning for an unrecognised diff header line", () => {
+    const document = parseRepositoryDiffDocument(
+      "src/weird.ts",
+      [
+        "diff --git a/src/weird.ts b/src/weird.ts",
+        "unknown-git-extension-line 12345",
+        "--- a/src/weird.ts",
+        "+++ b/src/weird.ts",
+        "@@ -1,1 +1,1 @@",
+        "-old",
+        "+new",
+        "",
+      ].join("\n")
+    );
+
+    expect(document.parseState).toBe("partial");
+    expect(document.warnings.some((w) => w.includes("Unsupported diff header line"))).toBe(true);
+  });
+
+  it("stops parsing a hunk when a new diff --git header appears mid-diff", () => {
+    const document = parseRepositoryDiffDocument(
+      "src/a.ts",
+      [
+        "diff --git a/src/a.ts b/src/a.ts",
+        "--- a/src/a.ts",
+        "+++ b/src/a.ts",
+        "@@ -1,1 +1,1 @@",
+        "-old",
+        "+new",
+        "diff --git a/src/b.ts b/src/b.ts",
+        "--- a/src/b.ts",
+        "+++ b/src/b.ts",
+        "@@ -1,1 +1,1 @@",
+        "-x",
+        "+y",
+        "",
+      ].join("\n")
+    );
+
+    expect(document.parseState).toBe("parsed");
+    expect(document.files).toHaveLength(2);
+    expect(document.files[0]?.hunks[0]?.lines).toHaveLength(2);
+    expect(document.files[1]?.hunks[0]?.lines).toHaveLength(2);
+  });
+
+  it("records a warning for an unexpected blank line inside a hunk body", () => {
+    const document = parseRepositoryDiffDocument(
+      "src/quirky.ts",
+      [
+        "diff --git a/src/quirky.ts b/src/quirky.ts",
+        "--- a/src/quirky.ts",
+        "+++ b/src/quirky.ts",
+        "@@ -1,3 +1,3 @@",
+        " context",
+        "",
+        " more context",
+        "",
+      ].join("\n")
+    );
+
+    expect(document.parseState).toBe("partial");
+    expect(document.warnings.some((w) => w.includes("unexpected blank line"))).toBe(true);
+  });
+
+  it("falls back to the filePath argument when the patch path is absent", () => {
+    // A patch where the +++ line has no a/b prefix and no content — exercises normalizePatchPath fallback
+    const document = parseRepositoryDiffDocument(
+      "fallback/file.ts",
+      [
+        "diff --git a/fallback/file.ts b/fallback/file.ts",
+        "--- fallback/file.ts",
+        "+++ fallback/file.ts",
+        "@@ -1,1 +1,1 @@",
+        "-old",
+        "+new",
+        "",
+      ].join("\n")
+    );
+
+    expect(document.parseState).toBe("parsed");
+    expect(document.files[0]?.newPath).toBe("fallback/file.ts");
+  });
 });
