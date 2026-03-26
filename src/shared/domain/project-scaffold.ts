@@ -26,6 +26,17 @@ export const REQUIRED_PACKAGE_SCRIPTS = [
   "test:integration",
 ] as const;
 
+export const REQUIRED_APP_SHELL_SCRIPTS = ["app:start", "app:smoke"] as const;
+
+export const REQUIRED_PACKAGING_SCRIPTS = [
+  "package:dir",
+  "package:verify",
+  "make:win",
+  "make:verify:win",
+  "make:deb",
+  "make:verify:deb",
+] as const;
+
 export function getRequiredProjectDirectories(): string[] {
   return [...REQUIRED_SOURCE_DIRECTORIES, ...REQUIRED_TEST_DIRECTORIES];
 }
@@ -38,4 +49,3 @@ export function findMissingItems(
 
   return requiredItems.filter((requiredItem) => !existingItemSet.has(requiredItem));
 }
-

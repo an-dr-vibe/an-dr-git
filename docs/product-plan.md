@@ -101,6 +101,7 @@ Deliverables:
 - structured logging
 - initial repository snapshot model
 - repository-session model that is compatible with future same-window tabs
+- packaging pipeline for Windows installers, Debian installers, and repo-local runnable artifacts
 
 Exit criteria:
 
@@ -109,6 +110,7 @@ Exit criteria:
 - renderer does not call Git or filesystem APIs directly
 - command execution is stable on Windows and Linux
 - failure states show enough raw detail to debug
+- packaging output exists for stakeholder verification and installer distribution
 
 Primary owners:
 

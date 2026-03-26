@@ -50,6 +50,7 @@ Phase 0 must deliver:
 - per-repository operation queue
 - structured logging
 - shell layout with placeholder zones and tab-ready session container
+- packaging pipeline with repo-local runnable artifacts and platform installers
 
 ## Backlog Order
 
@@ -257,6 +258,33 @@ Verification:
 - keyboard verification
 - visual review against the product direction
 
+### Slice 0.9: Packaging And Verification Artifacts
+
+Goal:
+
+Create distributable installers and predictable local build artifacts that stakeholders can run directly.
+
+Deliverables:
+
+- Electron Forge packaging configuration
+- repo-local packaged app output under a predictable artifacts directory
+- Windows installer output
+- Debian installer output configuration
+- package scripts for packaging, making installers, and artifact verification
+
+Acceptance criteria:
+
+- `npm run package:verify` produces a repo-local packaged application artifact and smoke-launches it successfully
+- `npm run make:verify:win` produces a Windows installer artifact on Windows
+- `npm run make:verify:deb` produces a Debian installer artifact on Linux or another supported host with the required packaging tools
+- artifact output paths are predictable and documented
+
+Verification:
+
+- local packaged-app smoke verification
+- local Windows installer verification on Windows
+- Debian installer verification on a supported Linux packaging host, or an explicit note when that host is unavailable
+
 ## Dependency Order
 
 The slices depend on each other in this order:
@@ -269,6 +297,7 @@ The slices depend on each other in this order:
 6. Repository Session Model
 7. Operation Queue And Logging
 8. Foundation UX/UI Pass
+9. Packaging And Verification Artifacts
 
 Notes:
 
@@ -288,6 +317,8 @@ Phase 0 is done only when all of these are true:
 - repository sessions are explicit and tab-ready
 - write operations are serialized per repository
 - structured logging exists for command execution and failures
+- repo-local packaged app artifacts can be generated and run for verification
+- Windows and Debian installer pipelines are configured and documented
 
 ## Test Plan For Phase 0
 
