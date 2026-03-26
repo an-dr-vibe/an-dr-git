@@ -20,6 +20,7 @@ The product should feel like:
 - visually modern and high quality
 - fast to scan and comfortable to use every day
 - faithful to Git rather than misleadingly simplified
+- minimalistic and clear, with stronger area separation and contrast than flat white surfaces with faint borders
 
 The long-term ambition is to become your own viable alternative to tools like SmartGit, starting from the most important workflows and expanding only after the core is solid.
 
@@ -49,11 +50,12 @@ Build a narrow MVP that proves four things:
 
 After the MVP is stable, expand into higher-complexity workflows such as:
 
+- history browsing
+- search
+- merge and rebase flows
 - commit authoring
 - staging
 - stash and tags
-- history browsing
-- merge and rebase flows
 - submodules and worktrees
 
 The product should grow only after the core trust model is proven.
@@ -78,7 +80,7 @@ Safe sync flows with explicit feedback and error visibility.
 
 ### Phase 4: MVP Quality Pass
 
-UI polish, UX refinement, keyboard workflows, large-repo validation, and product hardening.
+UI polish, UX refinement, same-window repo tabs, keyboard workflows, large-repo validation, and product hardening.
 
 ### Phase 5: Expansion
 
@@ -105,26 +107,32 @@ Advanced Git workflows and broader repository-management features.
 - refresh and operation states are unclear
 - error reporting becomes too abstract
 
-## Key Assumptions
+## Stakeholder Decisions
 
-The current plan assumes:
+Current decisions from the main stakeholder:
 
+- the phased MVP approach and current recommendation are approved
 - system Git is the authoritative backend for MVP
+- if Git is missing, the app should report clearly that it must be installed
+- the target user is similar to SmartGit's user base
 - Electron plus TypeScript is the Phase 1 stack
 - `pull --ff-only` is the safe initial pull model
 - authentication stays delegated to SSH and Git credential helpers
-- the first release is likely single-window
+- repository switching should happen in the same window, with tabs as the preferred model
+- the visual direction should be minimalistic and clear, with higher contrast and separated areas
+- accent color should be configurable
+- MVP should ship with light theme only
+- dark theme should come later
+- post-MVP feature priority should be history/search first, then merge/rebase, then other advanced workflows
 
-## Questions For The Main Stakeholder
+## Remaining Questions
 
-These decisions are the most important unresolved inputs from you:
+These are the important product questions that still remain:
 
-1. Should MVP rely only on system Git, or do you already expect a bundled fallback later?
-2. Is the product primarily for advanced Git users, or do you want it to soften Git complexity for less experienced users too?
-3. How opinionated should the visual identity be: understated premium, or more distinctive and bold?
-4. Do you want the first public version to stay intentionally single-window and single-repository focused?
-5. Which advanced feature matters most after MVP: commit/staging, history/search, or merge/rebase support?
-6. How much theme customization matters in the first version?
+1. Should repository tabs be part of the MVP quality pass, or move immediately after MVP if core stability needs more focus?
+2. What minimum diff-rendering quality is acceptable before raw diff fallback becomes the primary view?
+3. How should detected submodules, worktrees, and nested repos be surfaced before they are fully supported?
+4. Should `pull --ff-only` stay the default long term, or become configurable later?
 
 ## What Success Looks Like
 
@@ -146,12 +154,13 @@ The plan will fail if:
 
 ## Current Recommendation
 
-Approve the phased MVP approach and keep the first implementation focused on:
+Approved. Keep the first implementation focused on:
 
 - foundations
 - tree and branches
 - diff
 - push and pull
 - interface quality
+- a tab-ready repository session model, even if tab polish lands late in MVP
 
 This is the shortest path to a credible product instead of a shallow feature list.

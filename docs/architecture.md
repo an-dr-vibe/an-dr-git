@@ -100,6 +100,7 @@ Revisit Tauri + Rust only if one or more of these becomes true:
 4. Authentication should flow through the user's existing SSH agent and Git credential helpers.
 5. Read operations should be cheap, cancellable, and isolated from write operations.
 6. The interface must feel modern, deliberate, and high quality rather than purely utilitarian.
+7. The MVP requires system Git and must report clearly when Git is not installed.
 
 ## High-Level Design
 
@@ -129,6 +130,7 @@ flowchart LR
 Responsibilities:
 
 - Repository picker and recent repositories.
+- Repository switching within the same window.
 - File tree panel.
 - Branch panel.
 - Diff panel.
@@ -400,7 +402,8 @@ UI goals:
 - comfortable information density without crowding
 - desktop-first precision with keyboard-friendly interactions
 - a distinct design language rather than a default component-library look
-- high readability for code and diffs on both light and dark themes
+- high readability for code and diffs in a light-first MVP, with dark theme later
+- clearly separated interface areas with more contrast than white surfaces and thin gray borders
 
 UX goals:
 
@@ -409,6 +412,7 @@ UX goals:
 - complex Git states should be explained without oversimplifying them
 - loading and refresh behavior should feel responsive and predictable
 - raw Git output should always be available when the structured view is incomplete
+- switching between repositories in one window should be direct and low-friction
 
 Implementation guidance:
 
@@ -416,6 +420,9 @@ Implementation guidance:
 - Treat diff readability as a core product feature, not a later polish pass.
 - Build layouts that scale to large repositories and long branch lists.
 - Validate flows with keyboard usage, not only mouse usage.
+- Aim for a minimal, clear visual language in the direction of Notion, VS Code, and Obsidian, but with stronger panel separation.
+- Make the accent color configurable.
+- Ship light theme in MVP; defer dark theme until after the core product is stable.
 
 ## Reliability Rules
 
@@ -492,5 +499,5 @@ Decide these before coding starts:
 1. Require system Git in Phase 1 rather than bundling Git.
 2. Use `pull --ff-only` only.
 3. Treat credentials as external and do not build a password prompt.
-4. Keep the app single-window until repository session behavior is stable.
+4. Keep the app single-window, but design repository sessions so same-window repo tabs can be added without reworking the core.
 5. Ship raw-output fallback in every Git-facing panel from the first milestone.

@@ -37,9 +37,9 @@ The product should sit in this space:
 
 Primary users:
 
+- users similar to SmartGit's audience: technical Git users who already understand core Git concepts
 - individual developers who work across multiple repositories
-- power users who want dense repository visibility
-- users who already understand Git and want better tooling, not heavy abstraction
+- power users who want dense repository visibility and trustworthy sync workflows
 
 ## Product Principles
 
@@ -61,6 +61,7 @@ The first product slice must deliver these complete workflows:
 - inspect diffs based on native `git diff`
 - push safely
 - pull safely with `--ff-only`
+- report clearly when system Git is missing
 
 ### Deferred From The First Slice
 
@@ -93,10 +94,12 @@ Deliverables:
 - per-repository operation queue
 - structured logging
 - initial repository snapshot model
+- repository-session model that is compatible with future same-window tabs
 
 Exit criteria:
 
 - the app can open a local repo and confirm Git availability
+- the app reports clearly that Git must be installed when it is missing
 - renderer does not call Git or filesystem APIs directly
 - command execution is stable on Windows and Linux
 - failure states show enough raw detail to debug
@@ -209,6 +212,7 @@ Turn the functional MVP into a polished product.
 Deliverables:
 
 - cohesive design system
+- same-window repository switching with tabs
 - refined keyboard navigation
 - panel resizing and density tuning
 - improved empty, loading, stale, and error states
@@ -218,6 +222,7 @@ Deliverables:
 Exit criteria:
 
 - the UI feels deliberate and distinctive
+- repository tabs work cleanly without confusing repository state ownership
 - large repositories remain usable
 - keyboard workflows are practical
 - error and partial states are easy to understand
@@ -238,11 +243,11 @@ Add advanced Git workflows only after the base model is proven.
 
 Candidate areas:
 
+- history and search
+- merge and rebase support
 - commit authoring
 - staging and partial staging
 - stash and tags
-- history and search
-- merge and rebase support
 - submodules and worktrees
 - multi-window or multi-repository workflows
 
@@ -261,6 +266,7 @@ The product should not ship as a generic component-library application.
 - warnings should explain risk without hiding Git semantics
 - loading, refresh, and stale states should be visible and predictable
 - expert users should be able to scan dense information quickly
+- switching between repositories in the same window should feel lightweight and obvious
 
 ### UI Direction
 
@@ -268,11 +274,15 @@ The product should not ship as a generic component-library application.
 - use a purposeful typography system suitable for both metadata and code
 - keep color and motion restrained but distinctive
 - optimize diff readability as a signature surface
-- support both light and dark themes without becoming visually generic
+- use a minimal, clear visual direction with stronger separation between areas than white cards and thin gray borders
+- ship a light-theme MVP first
+- make the accent color configurable
+- defer dark theme until after the MVP core is stable
 
 ### Design Deliverables
 
 - shell layout and navigation model
+- repo-tab model and tab states
 - design tokens for type, color, spacing, and motion
 - component guidance for tree, branch rows, diff sections, warnings, and operation state
 - interaction spec for keyboard navigation and sync actions
@@ -372,12 +382,10 @@ The MVP is not ready until:
 
 These questions need explicit decisions before implementation expands:
 
-1. Is system Git the only supported option for MVP, or is a bundled fallback required later?
-2. Is `pull --ff-only` only the MVP rule, or the long-term default?
-3. What minimum diff rendering quality counts as acceptable before raw fallback takes over?
-4. Will the first release be strictly single-window?
-5. How should detected submodules, worktrees, and nested repos be communicated before they are fully supported?
-6. What level of theme customization is desired in MVP versus later?
+1. Should repository tabs land inside the MVP quality pass or immediately after MVP if core flows need more stabilization time?
+2. What minimum diff rendering quality counts as acceptable before raw fallback takes over?
+3. How should detected submodules, worktrees, and nested repos be communicated before they are fully supported?
+4. Should `pull --ff-only` remain the long-term default, or become a configurable sync strategy later?
 
 ## Drift Signals
 
@@ -391,7 +399,7 @@ If these appear, the project is moving in the wrong direction:
 
 ## Immediate Next Planning Steps
 
-1. Approve this roadmap and the MVP boundary.
+1. Roadmap and MVP boundary approved by the main stakeholder.
 2. Convert Phase 0 into an implementation backlog.
 3. Create the first shell, repository session, and IPC contracts.
-4. Create the shell layout, navigation, and design-token brief before detailed UI implementation begins.
+4. Create the shell layout, navigation, repo-tab model, and design-token brief before detailed UI implementation begins.
