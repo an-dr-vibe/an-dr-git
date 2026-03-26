@@ -4,7 +4,7 @@ Cross-platform Git client focused on a clear repository tree, branches, push/pul
 
 ## Development
 
-The repo now includes the Phase 0 foundations scaffold for Electron, React, Vite, TypeScript, ESLint, Vitest, and Electron Forge packaging.
+The repo now includes the Phase 0 foundations shell plus typed IPC contracts, system Git detection, and the first repository open flow on top of Electron, React, Vite, TypeScript, ESLint, Vitest, and Electron Forge packaging.
 
 Use Node `20.9+` with `npm`.
 
@@ -27,6 +27,13 @@ App shell commands:
 - `npm run package:verify` creates a repo-local packaged app under `artifacts/forge/` and smoke-launches the packaged executable
 - `npm run make:verify:win` creates a Windows installer under `artifacts/forge/make/` and verifies the installer artifact exists
 - `npm run make:verify:deb` creates a Debian installer under `artifacts/forge/make/` and verifies the `.deb` artifact exists
+
+Current Phase 0 behaviors:
+
+- preload exposes typed `getBootstrap`, `getGitStatus`, `openRepository`, and `pickAndOpenRepository` APIs only
+- system Git detection reports structured ready, missing, or unusable states to the renderer
+- repository open validates the path through the main process and returns structured errors for invalid paths and non-repositories
+- successful repository open creates a session-owned repository identity with root path, git dir path, and HEAD state
 
 Platform notes:
 

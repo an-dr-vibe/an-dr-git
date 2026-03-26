@@ -1,9 +1,34 @@
-import { app, ipcMain } from "electron";
+import { app, dialog, ipcMain } from "electron";
 
 import { APP_SHELL_CHANNELS } from "../../shared/contracts/app-shell.js";
-import { createAppShellBootstrap } from "../app/app-shell-bootstrap.js";
+import { GitExecutableResolver } from "../git/git-executable-resolver.js";
+import { createAppShellHandlers } from "./create-app-shell-handlers.js";
+import { RepositoryRegistry } from "../repository/repository-registry.js";
 
 export function registerAppShellHandlers(): void {
-  ipcMain.handle(APP_SHELL_CHANNELS.getBootstrap, () => createAppShellBootstrap(app.isPackaged));
-}
+  const handlers = createAppShellHandlers({
+    isPackaged: app.isPackaged,
+    gitExecutableResolver: new GitExecutableResolver(),
+    repositoryRegistry: new RepositoryRegistry(),
+    pickRepositoryPath: async () => {
+      const result = await dialog.showOpenDialog({
+        title: "Open Git Repository",
+        buttonLabel: "Open Repository",
+        properties: ["openDirectory"],
+      });
 
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      return result.filePaths[0] ?? null;
+    },
+  });
+
+  ipcMain.handle(APP_SHELL_CHANNELS.getBootstrap, () => handlers.getBootstrap());
+  ipcMain.handle(APP_SHELL_CHANNELS.getGitStatus, () => handlers.getGitStatus());
+  ipcMain.handle(APP_SHELL_CHANNELS.openRepository, (_event, payload: unknown) =>
+    handlers.openRepository(payload)
+  );
+  ipcMain.handle(APP_SHELL_CHANNELS.pickAndOpenRepository, () => handlers.pickAndOpenRepository());
+}

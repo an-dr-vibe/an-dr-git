@@ -361,6 +361,7 @@ tests/
 Core types:
 
 - `RepositoryId`
+- `RepositoryIdentity`
 - `RepositorySnapshot`
 - `BranchSummary`
 - `TreeNode`
@@ -370,10 +371,18 @@ Core types:
 - `DiffHunk`
 - `GitCommandResult`
 - `OperationHandle`
+- `AppShellError`
 
 Design rule:
 
 Shared contracts live in `src/shared` and are imported by both the main and renderer processes. IPC payloads must use these shared types plus runtime validation.
+
+Current foundations decision:
+
+- Phase 0 uses a preload bridge with explicit request/response calls for bootstrap, Git detection, typed-path repository open, and picker-based repository open.
+- Every IPC response is validated against the shared schema before the renderer consumes it.
+- User-visible failures are returned as structured errors with summary, detail, optional path context, and optional raw Git stderr.
+- Opening a repository creates or reactivates a session-owned `RepositoryIdentity` in the main process registry so later tab support can extend the same model.
 
 ## Git Client Specific Concerns
 
@@ -472,6 +481,13 @@ Fixtures:
 - Typed IPC contract layer
 - Repository open flow
 - Logging and operation queue
+
+Implemented so far:
+
+- shared Zod-backed IPC schemas for bootstrap, Git detection, and repository open flows
+- `GitExecutableResolver` using system `git --version` plus executable-path lookup
+- repository open validation using `git rev-parse` for top-level, git-dir, and HEAD state
+- initial main-process repository registry that owns active repository session identity
 
 ### Milestone 1: Tree + Branches
 

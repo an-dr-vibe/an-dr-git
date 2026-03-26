@@ -1,9 +1,14 @@
-import { APP_SHELL_NAME, APP_SHELL_PANELS, APP_SHELL_VERSION, getAppShellPanels } from "../../src/shared/domain/app-shell-layout.js";
+import {
+  APP_SHELL_NAME,
+  APP_SHELL_PANELS,
+  APP_SHELL_VERSION,
+  getAppShellPanels,
+} from "../../src/shared/domain/app-shell-layout.js";
 
 describe("app shell layout", () => {
-  it("defines the phase 0.2 shell identity", () => {
+  it("defines the phase 0.5 shell identity", () => {
     expect(APP_SHELL_NAME).toBe("an-dr-git");
-    expect(APP_SHELL_VERSION).toBe("phase-0-slice-0.2");
+    expect(APP_SHELL_VERSION).toBe("phase-0-slice-0.5");
   });
 
   it("returns the expected panels in order", () => {

@@ -110,7 +110,7 @@ Verification:
 - manual launch verification
 - preload/API boundary tests where practical
 
-### Slice 0.3: Typed IPC Contracts
+### Slice 0.3: Typed IPC Contracts — Done
 
 Goal:
 
@@ -134,7 +134,7 @@ Verification:
 - unit tests for contract validation
 - integration tests for IPC happy-path and invalid-payload cases
 
-### Slice 0.4: System Git Detection
+### Slice 0.4: System Git Detection — Done
 
 Goal:
 
@@ -159,7 +159,7 @@ Verification:
 - negative-path test for missing executable handling
 - manual verification of user-facing message
 
-### Slice 0.5: Repository Open Flow
+### Slice 0.5: Repository Open Flow — Done
 
 Goal:
 
