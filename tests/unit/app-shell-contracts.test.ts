@@ -4,6 +4,7 @@ import {
   gitStatusSchema,
   openRepositoryRequestSchema,
   openRepositoryResultSchema,
+  repositorySnapshotStateSchema,
 } from "../../src/shared/contracts/app-shell.js";
 
 describe("app shell contracts", () => {
@@ -71,6 +72,22 @@ describe("app shell contracts", () => {
     expect(createInvalidPayloadError("open repository request", parsed.error)).toMatchObject({
       code: "INVALID_PAYLOAD",
       summary: "The request payload was invalid.",
+    });
+  });
+
+  it("defines a structured repository snapshot state", () => {
+    expect(
+      repositorySnapshotStateSchema.parse({
+        activeRepository: null,
+        snapshot: null,
+        error: null,
+        refreshState: "idle",
+        isStale: false,
+        refreshedAt: null,
+      })
+    ).toMatchObject({
+      refreshState: "idle",
+      isStale: false,
     });
   });
 });

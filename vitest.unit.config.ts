@@ -10,7 +10,11 @@ export default defineConfig({
       provider: "v8",
       reportsDirectory: "coverage",
       reporter: ["text", "json-summary", "html"],
-      include: ["src/shared/domain/project-scaffold.ts"],
+      include: [
+        "src/shared/domain/app-shell-layout.ts",
+        "src/shared/domain/phase-1-state-matrix.ts",
+        "src/shared/domain/project-scaffold.ts",
+      ],
     },
   },
 });

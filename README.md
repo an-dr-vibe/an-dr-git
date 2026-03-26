@@ -4,7 +4,7 @@ Cross-platform Git client focused on a clear repository tree, branches, push/pul
 
 ## Development
 
-The repo now includes the completed Phase 0 foundations shell plus typed IPC contracts, system Git detection, repository open flow, session lifecycle, operation-queue scaffolding, structured Git logging, and Electron Forge packaging on top of Electron, React, Vite, TypeScript, ESLint, and Vitest.
+The repo now includes the completed Phase 0 and Phase 1 slices: typed IPC contracts, system Git detection, repository open flow, session lifecycle, Git-backed repository snapshot reads, tree and branch rendering, debounced refresh hints, structured Git logging, and Electron Forge packaging on top of Electron, React, Vite, TypeScript, ESLint, and Vitest.
 
 Use Node `20.9+` with `npm`.
 
@@ -28,20 +28,25 @@ App shell commands:
 - `npm run make:verify:win` creates a Windows installer under `artifacts/forge/make/` and verifies the installer artifact exists
 - `npm run make:verify:deb` creates a Debian installer under `artifacts/forge/make/` and verifies the `.deb` artifact exists
 
-Current Phase 0 behaviors:
+Current implemented behaviors:
 
 - preload exposes typed `getBootstrap`, `getGitStatus`, `openRepository`, and `pickAndOpenRepository` APIs only
 - system Git detection reports structured ready, missing, or unusable states to the renderer
 - repository open validates the path through the main process and returns structured errors for invalid paths and non-repositories
 - successful repository open creates or reactivates a session-owned repository identity with root path, git dir path, and HEAD state
 - repository sessions now have explicit lifecycle handling in the main process registry
+- repository snapshots are built in the main process from native Git commands and validated before the renderer consumes them
+- the tree panel renders tracked, changed, untracked, deleted, and ignored paths from a virtual Git-backed tree
+- the branch panel renders local and remote refs with current-branch, upstream, and ahead/behind context
+- snapshot refresh can be requested manually and is also fed by debounced watcher hints
 - Git CLI executions emit structured logs with command context for debugging
-- the shell explicitly renders the Phase 0 state matrix required for startup, Git attention, no-repo, open-in-progress, opened, invalid-repository, and unexpected-error states
+- the shell explicitly renders the Phase 1 state matrix for empty, loading, ready, refreshing, stale, and error repository states
 
 Phase status:
 
-- Phase 0: complete
-- Phase 1: planned in `docs/phase-1-plan.md`
+- Phase 0: complete on March 26, 2026
+- Phase 1: complete on March 26, 2026
+- Phase 2: planned in `docs/phase-2-plan.md`
 
 Platform notes:
 
@@ -57,6 +62,7 @@ Primary docs:
 - [docs/documentation-policy.md](docs/documentation-policy.md)
 - [docs/phase-0-plan.md](docs/phase-0-plan.md)
 - [docs/phase-1-plan.md](docs/phase-1-plan.md)
+- [docs/phase-2-plan.md](docs/phase-2-plan.md)
 - [docs/product-plan.md](docs/product-plan.md)
 - [docs/stakeholder-brief.md](docs/stakeholder-brief.md)
 - [AGENTS.md](AGENTS.md)

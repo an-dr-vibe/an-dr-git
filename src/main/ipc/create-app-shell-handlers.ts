@@ -3,6 +3,7 @@ import type {
   AppShellError,
   GitStatus,
   OpenRepositoryResult,
+  RepositorySnapshotState,
 } from "../../shared/contracts/app-shell.js";
 import {
   appShellBootstrapSchema,
@@ -10,17 +11,20 @@ import {
   gitStatusSchema,
   openRepositoryRequestSchema,
   openRepositoryResultSchema,
+  repositorySnapshotStateSchema,
   validateContract,
 } from "../../shared/contracts/app-shell.js";
 import { createAppShellBootstrap } from "../app/app-shell-bootstrap.js";
 import { GitExecutableResolver } from "../git/git-executable-resolver.js";
 import { RepositoryOpener } from "../repository/open-repository.js";
 import { RepositoryRegistry } from "../repository/repository-registry.js";
+import { RepositorySnapshotService } from "../repository/repository-snapshot-service.js";
 
 interface CreateAppShellHandlersOptions {
   readonly isPackaged: boolean;
   readonly gitExecutableResolver: GitExecutableResolver;
   readonly repositoryRegistry: RepositoryRegistry;
+  readonly repositorySnapshotService: RepositorySnapshotService;
   readonly pickRepositoryPath: () => Promise<string | null>;
 }
 
@@ -29,6 +33,8 @@ export interface AppShellHandlers {
   getGitStatus(): Promise<GitStatus>;
   openRepository(payload: unknown): Promise<OpenRepositoryResult>;
   pickAndOpenRepository(): Promise<OpenRepositoryResult>;
+  getRepositorySnapshot(): Promise<RepositorySnapshotState>;
+  refreshRepositorySnapshot(): Promise<RepositorySnapshotState>;
 }
 
 export function createAppShellHandlers(options: CreateAppShellHandlersOptions): AppShellHandlers {
@@ -68,9 +74,15 @@ export function createAppShellHandlers(options: CreateAppShellHandlersOptions): 
         );
       }
 
+      const openResult = await repositoryOpener.openRepository(parsedRequest.data);
+
+      if (openResult.kind === "opened") {
+        await options.repositorySnapshotService.prepareSession(openResult.repository.sessionId);
+      }
+
       return validateContract(
         openRepositoryResultSchema,
-        await repositoryOpener.openRepository(parsedRequest.data),
+        openResult,
         "open repository response"
       );
     },
@@ -87,6 +99,22 @@ export function createAppShellHandlers(options: CreateAppShellHandlersOptions): 
       }
 
       return this.openRepository({ repositoryPath });
+    },
+
+    async getRepositorySnapshot(): Promise<RepositorySnapshotState> {
+      return validateContract(
+        repositorySnapshotStateSchema,
+        await options.repositorySnapshotService.getActiveSnapshotState(),
+        "repository snapshot state response"
+      );
+    },
+
+    async refreshRepositorySnapshot(): Promise<RepositorySnapshotState> {
+      return validateContract(
+        repositorySnapshotStateSchema,
+        await options.repositorySnapshotService.refreshActiveSnapshot(),
+        "repository snapshot refresh response"
+      );
     },
   };
 }

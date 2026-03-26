@@ -76,11 +76,15 @@ Repository tree, branch visibility, refresh model, and core repository-state cla
 
 Status:
 
-- Planned next. See `docs/phase-1-plan.md` for the execution backlog.
+- Complete on March 26, 2026. See `docs/phase-1-plan.md` for the execution backlog that was delivered.
 
 ### Phase 2: Diff
 
 Readable diff experience built from native Git output with raw fallback.
+
+Status:
+
+- Planned next. See `docs/phase-2-plan.md` for the execution backlog.
 
 ### Phase 3: Push And Pull
 
@@ -172,7 +176,7 @@ Approved. Keep the first implementation focused on:
 
 Immediate execution note:
 
-- The repo now has the completed Phase 0 shell, Git detection, repository-open flow, session lifecycle, operation queue, structured logging, and packaging pipeline.
-- The next delivery target is Phase 1 tree and branch visibility without expanding into diff or sync work early.
+- The repo now has the completed Phase 0 shell plus the completed Phase 1 repository snapshot, tree, branch, and refresh slice.
+- The next delivery target is Phase 2 diff visibility without expanding into sync work early.
 
 This is the shortest path to a credible product instead of a shallow feature list.

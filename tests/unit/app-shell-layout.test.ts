@@ -8,7 +8,7 @@ import {
 describe("app shell layout", () => {
   it("defines the phase 0.5 shell identity", () => {
     expect(APP_SHELL_NAME).toBe("an-dr-git");
-    expect(APP_SHELL_VERSION).toBe("phase-0-complete");
+    expect(APP_SHELL_VERSION).toBe("phase-1-complete");
   });
 
   it("returns the expected panels in order", () => {

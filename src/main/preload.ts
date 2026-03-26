@@ -6,11 +6,13 @@ import {
   gitStatusSchema,
   openRepositoryRequestSchema,
   openRepositoryResultSchema,
+  repositorySnapshotStateSchema,
   type AppShellApi,
   type AppShellBootstrap,
   type GitStatus,
   type OpenRepositoryRequest,
   type OpenRepositoryResult,
+  type RepositorySnapshotState,
   validateContract,
 } from "../shared/contracts/app-shell.js";
 
@@ -52,6 +54,14 @@ const appShellApi: AppShellApi = {
   pickAndOpenRepository: async (): Promise<OpenRepositoryResult> =>
     invokeWithoutPayload(APP_SHELL_CHANNELS.pickAndOpenRepository, (value) =>
       validateContract(openRepositoryResultSchema, value, "pick repository response")
+    ),
+  getRepositorySnapshot: async (): Promise<RepositorySnapshotState> =>
+    invokeWithoutPayload(APP_SHELL_CHANNELS.getRepositorySnapshot, (value) =>
+      validateContract(repositorySnapshotStateSchema, value, "repository snapshot state response")
+    ),
+  refreshRepositorySnapshot: async (): Promise<RepositorySnapshotState> =>
+    invokeWithoutPayload(APP_SHELL_CHANNELS.refreshRepositorySnapshot, (value) =>
+      validateContract(repositorySnapshotStateSchema, value, "repository snapshot refresh response")
     ),
 };
 

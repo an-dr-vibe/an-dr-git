@@ -5,6 +5,8 @@ export const APP_SHELL_CHANNELS = {
   getGitStatus: "app-shell:get-git-status",
   openRepository: "app-shell:open-repository",
   pickAndOpenRepository: "app-shell:pick-and-open-repository",
+  getRepositorySnapshot: "app-shell:get-repository-snapshot",
+  refreshRepositorySnapshot: "app-shell:refresh-repository-snapshot",
 } as const;
 
 export const appShellPlatformSchema = z.enum(["darwin", "linux", "win32"]);
@@ -99,11 +101,110 @@ export const openRepositoryResultSchema = z.discriminatedUnion("kind", [
 ]);
 export type OpenRepositoryResult = z.infer<typeof openRepositoryResultSchema>;
 
+export const repositoryHeadKindSchema = z.enum(["branch", "detached"]);
+export type RepositoryHeadKind = z.infer<typeof repositoryHeadKindSchema>;
+
+export const repositoryHeadStateSchema = z.object({
+  kind: repositoryHeadKindSchema,
+  label: z.string().min(1),
+  isUnborn: z.boolean(),
+  commitSha: z.string().min(1).optional(),
+  upstreamName: z.string().min(1).optional(),
+  aheadCount: z.number().int().nonnegative(),
+  behindCount: z.number().int().nonnegative(),
+});
+export type RepositoryHeadState = z.infer<typeof repositoryHeadStateSchema>;
+
+export const fileChangeKindSchema = z.enum([
+  "clean",
+  "added",
+  "modified",
+  "deleted",
+  "renamed",
+  "untracked",
+  "ignored",
+]);
+export type FileChangeKind = z.infer<typeof fileChangeKindSchema>;
+
+export const treeNodeKindSchema = z.enum(["directory", "file"]);
+export type TreeNodeKind = z.infer<typeof treeNodeKindSchema>;
+
+export interface TreeNode {
+  path: string;
+  name: string;
+  kind: TreeNodeKind;
+  change: FileChangeKind;
+  previousPath?: string | undefined;
+  children: TreeNode[];
+}
+
+export const treeNodeSchema: z.ZodType<TreeNode> = z.lazy(() =>
+  z.object({
+    path: z.string().min(1),
+    name: z.string().min(1),
+    kind: treeNodeKindSchema,
+    change: fileChangeKindSchema,
+    previousPath: z.string().min(1).optional(),
+    children: z.array(treeNodeSchema),
+  })
+);
+
+export const branchKindSchema = z.enum(["local", "remote"]);
+export type BranchKind = z.infer<typeof branchKindSchema>;
+
+export const branchTrackingStatusSchema = z.enum(["tracking", "missing", "gone"]);
+export type BranchTrackingStatus = z.infer<typeof branchTrackingStatusSchema>;
+
+export const branchSummarySchema = z.object({
+  refName: z.string().min(1),
+  name: z.string().min(1),
+  kind: branchKindSchema,
+  remoteName: z.string().min(1).optional(),
+  isCurrent: z.boolean(),
+  commitSha: z.string().min(1).optional(),
+  upstreamName: z.string().min(1).optional(),
+  trackingStatus: branchTrackingStatusSchema,
+  aheadCount: z.number().int().nonnegative(),
+  behindCount: z.number().int().nonnegative(),
+});
+export type BranchSummary = z.infer<typeof branchSummarySchema>;
+
+export const repositorySnapshotSchema = z.object({
+  head: repositoryHeadStateSchema,
+  branches: z.object({
+    local: z.array(branchSummarySchema),
+    remote: z.array(branchSummarySchema),
+  }),
+  tree: z.array(treeNodeSchema),
+  counts: z.object({
+    trackedFiles: z.number().int().nonnegative(),
+    changedFiles: z.number().int().nonnegative(),
+    untrackedFiles: z.number().int().nonnegative(),
+    ignoredFiles: z.number().int().nonnegative(),
+  }),
+});
+export type RepositorySnapshot = z.infer<typeof repositorySnapshotSchema>;
+
+export const repositorySnapshotRefreshStateSchema = z.enum(["idle", "loading", "refreshing"]);
+export type RepositorySnapshotRefreshState = z.infer<typeof repositorySnapshotRefreshStateSchema>;
+
+export const repositorySnapshotStateSchema = z.object({
+  activeRepository: repositoryIdentitySchema.nullable(),
+  snapshot: repositorySnapshotSchema.nullable(),
+  error: appShellErrorSchema.nullable(),
+  refreshState: repositorySnapshotRefreshStateSchema,
+  isStale: z.boolean(),
+  refreshedAt: z.string().datetime().nullable(),
+});
+export type RepositorySnapshotState = z.infer<typeof repositorySnapshotStateSchema>;
+
 export interface AppShellApi {
   getBootstrap(): Promise<AppShellBootstrap>;
   getGitStatus(): Promise<GitStatus>;
   openRepository(request: OpenRepositoryRequest): Promise<OpenRepositoryResult>;
   pickAndOpenRepository(): Promise<OpenRepositoryResult>;
+  getRepositorySnapshot(): Promise<RepositorySnapshotState>;
+  refreshRepositorySnapshot(): Promise<RepositorySnapshotState>;
 }
 
 export function formatValidationError(error: ZodError): string {

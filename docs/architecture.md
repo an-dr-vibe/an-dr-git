@@ -385,6 +385,9 @@ Current foundations decision:
 - Opening a repository creates or reactivates a session-owned `RepositoryIdentity` in the main process registry so later tab support can extend the same model.
 - Repository sessions now own a per-repository operation queue so later write actions can serialize safely without redesigning session state.
 - Every Git execution now emits a structured log record with operation name, operation kind, command, args, working directory, duration, exit code, timeout status, and repository context.
+- Phase 1 adds a shared `RepositorySnapshot` contract plus explicit read and refresh IPC calls for the active repository.
+- The main process now owns snapshot building, cached snapshot state, and debounced watcher hints; the renderer only consumes validated snapshot state.
+- Repository identity is refreshed from Git-backed snapshot reads so HEAD changes stay authoritative after branch movement.
 
 ## Git Client Specific Concerns
 
@@ -501,6 +504,14 @@ Implemented in Phase 0:
 - File tree rendering
 - Branch listing with tracking state
 - Refresh workflow and watchers
+
+Implemented in Phase 1:
+
+- shared snapshot contracts for tree, branches, head state, and refresh state
+- Git-backed tree assembly from `git status --porcelain=v2 -z --branch`, `git ls-files -z`, and `git ls-files --others --exclude-standard -z`
+- local and remote branch listing through `git for-each-ref`
+- session-owned snapshot caching plus debounced watcher hints
+- renderer tree and branch panels wired through validated IPC only
 
 ### Milestone 2: Diff
 

@@ -1,7 +1,7 @@
 import type { AppShellPanelDefinition } from "../contracts/app-shell.js";
 
 export const APP_SHELL_NAME = "an-dr-git";
-export const APP_SHELL_VERSION = "phase-0-complete";
+export const APP_SHELL_VERSION = "phase-1-complete";
 export const SESSION_CONTAINER_LABEL = "Repository Sessions";
 
 export const APP_SHELL_PANELS: readonly AppShellPanelDefinition[] = [
@@ -9,19 +9,19 @@ export const APP_SHELL_PANELS: readonly AppShellPanelDefinition[] = [
     id: "repository-tree",
     title: "Repository Tree",
     eyebrow: "Workspace",
-    description: "Repository identity is live. Tree rendering lands next once snapshot building is in place.",
+    description: "Phase 1 now renders the Git-backed repository tree with tracked, changed, untracked, and ignored states.",
   },
   {
     id: "branch-state",
     title: "Branch State",
     eyebrow: "Branches",
-    description: "The active HEAD now comes from Git. Full branch lists and tracking details land in the next phase.",
+    description: "Phase 1 now shows local and remote branches with current-branch and upstream tracking context.",
   },
   {
     id: "diff-inspector",
     title: "Diff Inspector",
     eyebrow: "Diff",
-    description: "Diff rendering stays deferred, but repository open failures already preserve raw Git stderr for debugging.",
+    description: "Diff rendering stays deferred to Phase 2, but the shell now carries the selected tree and branch context into that next slice.",
   },
 ] as const;
 

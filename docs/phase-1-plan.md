@@ -14,6 +14,10 @@ This phase is complete only when:
 - the branch panel reflects local and remote branches plus current-branch state
 - refresh behavior is predictable after open and after filesystem hints
 
+## Status
+
+Phase 1 is complete on March 26, 2026.
+
 ## Phase Goal
 
 Deliver the first trustworthy repository overview: tree, branches, current-branch state, and refresh orchestration inside the existing shell.

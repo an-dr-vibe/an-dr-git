@@ -88,7 +88,8 @@ The roadmap is intentionally phased so each milestone delivers a usable vertical
 Current status as of March 26, 2026:
 
 - Phase 0 is complete.
-- Phase 1 is the active next milestone.
+- Phase 1 is complete.
+- Phase 2 is the active next milestone.
 
 ### Phase 0: Foundations
 
@@ -155,6 +156,10 @@ Execution plan:
 
 - `docs/phase-1-plan.md`
 
+Status:
+
+- Complete on March 26, 2026.
+
 Primary owners:
 
 - architect for snapshot boundaries
@@ -183,6 +188,10 @@ Exit criteria:
 - binary and large diff cases are surfaced safely
 - diff readability is strong enough to be a product strength, not a checkbox
 - raw Git output remains accessible in every unsupported case
+
+Execution plan:
+
+- `docs/phase-2-plan.md`
 
 Primary owners:
 
@@ -421,6 +430,6 @@ If these appear, the project is moving in the wrong direction:
 ## Immediate Next Planning Steps
 
 1. Roadmap and MVP boundary approved by the main stakeholder.
-2. Convert Phase 0 into an implementation backlog in `docs/phase-0-plan.md`.
-3. Create the first shell, repository session, and IPC contracts.
-4. Create the shell layout, navigation, repo-tab model, and design-token brief before detailed UI implementation begins.
+2. Treat Phase 0 and Phase 1 as completed baseline capabilities rather than planned work.
+3. Execute the Phase 2 backlog in `docs/phase-2-plan.md`.
+4. Keep the shell layout, tree selection model, and diff-panel brief aligned while the diff pipeline is added.
