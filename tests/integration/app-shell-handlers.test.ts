@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { createAppShellHandlers } from "../../src/main/ipc/create-app-shell-handlers.js";
 import { GitExecutableResolver } from "../../src/main/git/git-executable-resolver.js";
 import { RepositoryRegistry } from "../../src/main/repository/repository-registry.js";
+import { RepositoryDiffService } from "../../src/main/repository/repository-diff-service.js";
 import { RepositorySnapshotService } from "../../src/main/repository/repository-snapshot-service.js";
 import {
   createRepositoryFixture,
@@ -18,6 +19,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -41,6 +43,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -64,6 +67,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -90,6 +94,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -116,6 +121,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -139,6 +145,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -162,6 +169,7 @@ describe("app shell handlers integration", () => {
       gitExecutableResolver,
       repositoryRegistry,
       repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+      repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
       pickRepositoryPath: async () => null,
     });
 
@@ -174,5 +182,36 @@ describe("app shell handlers integration", () => {
     expect(snapshotState.activeRepository?.rootPath).toBe(repositoryPath);
     expect(snapshotState.snapshot?.branches.local.length).toBeGreaterThan(0);
     expect(snapshotState.snapshot?.tree.length).toBeGreaterThan(0);
+  });
+
+  it("loads a diff through the shared handler contract", async () => {
+    const repositoryPath = await createRepositoryFixture();
+    const repositoryRegistry = new RepositoryRegistry();
+    const gitExecutableResolver = new GitExecutableResolver();
+    const repositorySnapshotService = new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry);
+    const repositoryDiffService = new RepositoryDiffService(gitExecutableResolver, repositoryRegistry);
+    const handlers = createAppShellHandlers({
+      isPackaged: false,
+      gitExecutableResolver,
+      repositoryRegistry,
+      repositorySnapshotService,
+      repositoryDiffService,
+      pickRepositoryPath: async () => null,
+    });
+
+    const openResult = await handlers.openRepository({ repositoryPath });
+
+    expect(openResult.kind).toBe("opened");
+
+    if (openResult.kind !== "opened") {
+      return;
+    }
+
+    const diffResult = await handlers.getRepositoryDiff({
+      sessionId: openResult.repository.sessionId,
+      filePath: "README.md",
+    });
+
+    expect(diffResult.kind).toBe("loaded");
   });
 });

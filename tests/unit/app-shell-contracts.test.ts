@@ -6,6 +6,10 @@ import {
   openRepositoryResultSchema,
   repositorySnapshotStateSchema,
 } from "../../src/shared/contracts/app-shell.js";
+import {
+  repositoryDiffRequestSchema,
+  repositoryDiffResultSchema,
+} from "../../src/shared/contracts/repository-diff.js";
 
 describe("app shell contracts", () => {
   it("accepts bootstrap payloads that match the shared contract", () => {
@@ -88,6 +92,59 @@ describe("app shell contracts", () => {
     ).toMatchObject({
       refreshState: "idle",
       isStale: false,
+    });
+  });
+
+  it("defines a typed repository diff request", () => {
+    expect(
+      repositoryDiffRequestSchema.parse({
+        sessionId: "session-1",
+        filePath: "src/app.ts",
+      })
+    ).toMatchObject({
+      sessionId: "session-1",
+    });
+  });
+
+  it("defines a typed repository diff result with raw fallback", () => {
+    expect(
+      repositoryDiffResultSchema.parse({
+        kind: "loaded",
+        activeRepository: {
+          sessionId: "session-1",
+          rootPath: "/repo",
+          gitDirectoryPath: "/repo/.git",
+          currentHead: "main",
+          isDetached: false,
+          isUnborn: false,
+        },
+        request: {
+          sessionId: "session-1",
+          filePath: "src/app.ts",
+        },
+        document: {
+          requestedPath: "src/app.ts",
+          parseState: "partial",
+          rawText: "diff --git a/src/app.ts b/src/app.ts",
+          warnings: ["Unsupported hunk line"],
+          files: [
+            {
+              oldPath: "src/app.ts",
+              newPath: "src/app.ts",
+              displayPath: "src/app.ts",
+              changeType: "modified",
+              markers: ["no-newline"],
+              headerLines: ["diff --git a/src/app.ts b/src/app.ts"],
+              hunks: [],
+            },
+          ],
+        },
+      })
+    ).toMatchObject({
+      kind: "loaded",
+      document: {
+        parseState: "partial",
+      },
     });
   });
 });

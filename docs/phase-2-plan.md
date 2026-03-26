@@ -16,13 +16,24 @@ This phase is complete only when:
 
 ## Status
 
-Phase 2 is planned next as of March 26, 2026.
+Phase 2 is complete on March 26, 2026.
 
 Phase 1 is complete and now provides the active repository snapshot, tree selection context, branch context, and debounced refresh model this phase depends on.
 
 ## Phase Goal
 
 Deliver the first trustworthy diff experience: Git execution, structured parsing, raw fallback, and readable presentation inside the existing three-panel shell.
+
+## Delivery Notes
+
+Phase 2 shipped with these repo-local outcomes:
+
+- shared diff contracts under `src/shared/contracts/repository-diff.ts`
+- a separate main-process diff service instead of extending snapshot refresh state
+- native `git diff` execution for selected files through typed IPC only
+- a structured parser for supported unified diff output with explicit raw, partial, binary, and empty states
+- a denser repository tree and more visual branch layout tuned for the diff workflow
+- coverage expanded to the real Phase 2 modules with unit coverage in the 80-90% target band
 
 ## Non-Goals
 
@@ -193,6 +204,10 @@ Phase 2 is done only when all of these are true:
 - binary and rename-oriented cases are surfaced explicitly
 - the renderer remains Git- and filesystem-isolated
 - a fresh packaged artifact exists for stakeholder verification
+
+Status:
+
+- Complete on March 26, 2026.
 
 ## Test Plan For Phase 2
 

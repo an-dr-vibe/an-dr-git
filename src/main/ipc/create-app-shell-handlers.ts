@@ -14,8 +14,14 @@ import {
   repositorySnapshotStateSchema,
   validateContract,
 } from "../../shared/contracts/app-shell.js";
+import type { RepositoryDiffResult } from "../../shared/contracts/repository-diff.js";
+import {
+  repositoryDiffRequestSchema,
+  repositoryDiffResultSchema,
+} from "../../shared/contracts/repository-diff.js";
 import { createAppShellBootstrap } from "../app/app-shell-bootstrap.js";
 import { GitExecutableResolver } from "../git/git-executable-resolver.js";
+import { RepositoryDiffService } from "../repository/repository-diff-service.js";
 import { RepositoryOpener } from "../repository/open-repository.js";
 import { RepositoryRegistry } from "../repository/repository-registry.js";
 import { RepositorySnapshotService } from "../repository/repository-snapshot-service.js";
@@ -25,6 +31,7 @@ interface CreateAppShellHandlersOptions {
   readonly gitExecutableResolver: GitExecutableResolver;
   readonly repositoryRegistry: RepositoryRegistry;
   readonly repositorySnapshotService: RepositorySnapshotService;
+  readonly repositoryDiffService: RepositoryDiffService;
   readonly pickRepositoryPath: () => Promise<string | null>;
 }
 
@@ -35,6 +42,7 @@ export interface AppShellHandlers {
   pickAndOpenRepository(): Promise<OpenRepositoryResult>;
   getRepositorySnapshot(): Promise<RepositorySnapshotState>;
   refreshRepositorySnapshot(): Promise<RepositorySnapshotState>;
+  getRepositoryDiff(payload: unknown): Promise<RepositoryDiffResult>;
 }
 
 export function createAppShellHandlers(options: CreateAppShellHandlersOptions): AppShellHandlers {
@@ -114,6 +122,28 @@ export function createAppShellHandlers(options: CreateAppShellHandlersOptions): 
         repositorySnapshotStateSchema,
         await options.repositorySnapshotService.refreshActiveSnapshot(),
         "repository snapshot refresh response"
+      );
+    },
+
+    async getRepositoryDiff(payload: unknown): Promise<RepositoryDiffResult> {
+      const parsedRequest = repositoryDiffRequestSchema.safeParse(payload);
+
+      if (!parsedRequest.success) {
+        return validateContract(
+          repositoryDiffResultSchema,
+          {
+            kind: "error",
+            activeRepository: options.repositoryRegistry.getActive(),
+            error: createInvalidPayloadError("repository diff request", parsedRequest.error),
+          },
+          "repository diff error response"
+        );
+      }
+
+      return validateContract(
+        repositoryDiffResultSchema,
+        await options.repositoryDiffService.getDiff(parsedRequest.data),
+        "repository diff response"
       );
     },
   };

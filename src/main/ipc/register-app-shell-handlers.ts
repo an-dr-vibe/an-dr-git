@@ -3,17 +3,20 @@ import { app, dialog, ipcMain } from "electron";
 import { APP_SHELL_CHANNELS } from "../../shared/contracts/app-shell.js";
 import { GitExecutableResolver } from "../git/git-executable-resolver.js";
 import { createAppShellHandlers } from "./create-app-shell-handlers.js";
+import { RepositoryDiffService } from "../repository/repository-diff-service.js";
 import { RepositoryRegistry } from "../repository/repository-registry.js";
 import { RepositorySnapshotService } from "../repository/repository-snapshot-service.js";
 
 export function registerAppShellHandlers(): void {
   const gitExecutableResolver = new GitExecutableResolver();
   const repositoryRegistry = new RepositoryRegistry();
+  const repositorySnapshotService = new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry);
   const handlers = createAppShellHandlers({
     isPackaged: app.isPackaged,
     gitExecutableResolver,
     repositoryRegistry,
-    repositorySnapshotService: new RepositorySnapshotService(gitExecutableResolver, repositoryRegistry),
+    repositorySnapshotService,
+    repositoryDiffService: new RepositoryDiffService(gitExecutableResolver, repositoryRegistry),
     pickRepositoryPath: async () => {
       const result = await dialog.showOpenDialog({
         title: "Open Git Repository",
@@ -38,5 +41,8 @@ export function registerAppShellHandlers(): void {
   ipcMain.handle(APP_SHELL_CHANNELS.getRepositorySnapshot, () => handlers.getRepositorySnapshot());
   ipcMain.handle(APP_SHELL_CHANNELS.refreshRepositorySnapshot, () =>
     handlers.refreshRepositorySnapshot()
+  );
+  ipcMain.handle(APP_SHELL_CHANNELS.getRepositoryDiff, (_event, payload: unknown) =>
+    handlers.getRepositoryDiff(payload)
   );
 }

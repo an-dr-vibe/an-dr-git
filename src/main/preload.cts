@@ -9,6 +9,10 @@ import type {
   OpenRepositoryResult,
   RepositorySnapshotState,
 } from "../shared/contracts/app-shell.js";
+import type {
+  RepositoryDiffRequest,
+  RepositoryDiffResult,
+} from "../shared/contracts/repository-diff.js";
 
 type AppShellContractsModule = typeof import("../shared/contracts/app-shell.js");
 
@@ -90,6 +94,19 @@ const appShellApi: AppShellApi = {
 
     return invokeWithoutPayload(APP_SHELL_CHANNELS.refreshRepositorySnapshot, (value) =>
       validateContract(repositorySnapshotStateSchema, value, "repository snapshot refresh response")
+    );
+  },
+  getRepositoryDiff: async (request: RepositoryDiffRequest): Promise<RepositoryDiffResult> => {
+    const { APP_SHELL_CHANNELS, validateContract } = await loadContracts();
+    const { repositoryDiffRequestSchema, repositoryDiffResultSchema } = await import(
+      "../shared/contracts/repository-diff.js"
+    );
+
+    return invokeWithPayload(
+      APP_SHELL_CHANNELS.getRepositoryDiff,
+      request,
+      (value) => validateContract(repositoryDiffRequestSchema, value, "repository diff request"),
+      (value) => validateContract(repositoryDiffResultSchema, value, "repository diff response")
     );
   },
 };

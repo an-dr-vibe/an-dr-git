@@ -84,11 +84,15 @@ Readable diff experience built from native Git output with raw fallback.
 
 Status:
 
-- Planned next. See `docs/phase-2-plan.md` for the execution backlog.
+- Complete on March 26, 2026. See `docs/phase-2-plan.md` for the delivered backlog.
 
 ### Phase 3: Push And Pull
 
 Safe sync flows with explicit feedback and error visibility.
+
+Status:
+
+- Planned next. See `docs/phase-3-plan.md` for the execution backlog.
 
 ### Phase 4: MVP Quality Pass
 
@@ -177,6 +181,6 @@ Approved. Keep the first implementation focused on:
 Immediate execution note:
 
 - The repo now has the completed Phase 0 shell plus the completed Phase 1 repository snapshot, tree, branch, and refresh slice.
-- The next delivery target is Phase 2 diff visibility without expanding into sync work early.
+- The next delivery target is Phase 3 sync visibility without expanding into history, staging, or merge work early.
 
 This is the shortest path to a credible product instead of a shallow feature list.

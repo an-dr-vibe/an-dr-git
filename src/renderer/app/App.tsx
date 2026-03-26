@@ -11,6 +11,11 @@ import type {
   RepositorySnapshotState,
   TreeNode,
 } from "../../shared/contracts/app-shell.js";
+import type {
+  DiffFile,
+  DiffLine,
+  RepositoryDiffResult,
+} from "../../shared/contracts/repository-diff.js";
 import { APP_SHELL_VERSION } from "../../shared/domain/app-shell-layout.js";
 import {
   getPhase1StateMatrix,
@@ -33,6 +38,32 @@ interface FlatTreeNode {
   readonly node: TreeNode;
   readonly depth: number;
 }
+
+type LoadedDiffResult = Extract<RepositoryDiffResult, { kind: "loaded" }>;
+
+type DiffLoadState =
+  | { kind: "idle" }
+  | {
+      kind: "loading";
+      request: {
+        readonly sessionId: string;
+        readonly filePath: string;
+      };
+    }
+  | {
+      kind: "loaded";
+      result: LoadedDiffResult;
+    }
+  | {
+      kind: "error";
+      error: {
+        readonly summary: string;
+        readonly detail: string;
+        readonly repositoryPath?: string | undefined;
+        readonly stderr?: string | undefined;
+      };
+      requestPath: string | null;
+    };
 
 const EMPTY_SNAPSHOT_STATE: RepositorySnapshotState = {
   activeRepository: null,
@@ -57,6 +88,7 @@ export function App(): JSX.Element {
   const [isOpeningRepository, setIsOpeningRepository] = useState(false);
   const [selectedTreePath, setSelectedTreePath] = useState<string | null>(null);
   const [selectedBranchRef, setSelectedBranchRef] = useState<string | null>(null);
+  const [diffState, setDiffState] = useState<DiffLoadState>({ kind: "idle" });
 
   useEffect(() => {
     window.__AN_DR_GIT_RENDERER_STATE__ = loadState.kind;
@@ -93,6 +125,7 @@ export function App(): JSX.Element {
   }, []);
 
   const activeSessionId = loadState.kind === "ready" ? loadState.activeRepository?.sessionId ?? null : null;
+  const diffSnapshot = loadState.kind === "ready" ? loadState.snapshotState.snapshot : null;
 
   useEffect(() => {
     if (loadState.kind !== "ready" || !activeSessionId) {
@@ -120,6 +153,66 @@ export function App(): JSX.Element {
       cancelled = true;
     };
   }, [activeSessionId, loadState.kind]);
+
+  useEffect(() => {
+    if (loadState.kind !== "ready" || !loadState.activeRepository) {
+      setDiffState({ kind: "idle" });
+      return;
+    }
+
+    const requestedNode = resolveSelectedTreeNode(
+      flattenTree(loadState.snapshotState.snapshot?.tree ?? []),
+      selectedTreePath
+    );
+
+    if (!requestedNode || requestedNode.kind !== "file") {
+      setDiffState({ kind: "idle" });
+      return;
+    }
+
+    const request = {
+      sessionId: loadState.activeRepository.sessionId,
+      filePath: requestedNode.path,
+    };
+    let cancelled = false;
+
+    setDiffState({ kind: "loading", request });
+
+    void getAppShell()
+      .getRepositoryDiff(request)
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (result.kind === "loaded") {
+          setDiffState({ kind: "loaded", result });
+          return;
+        }
+
+        setDiffState({
+          kind: "error",
+          error: result.error,
+          requestPath: result.request?.filePath ?? request.filePath,
+        });
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setDiffState({
+            kind: "error",
+            error: {
+              summary: "Diff loading failed.",
+              detail: error instanceof Error ? error.message : "The diff request did not complete.",
+            },
+            requestPath: request.filePath,
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadState.kind, activeSessionId, diffSnapshot, selectedTreePath]);
 
   useEffect(() => {
     if (loadState.kind !== "ready" || !activeSessionId) {
@@ -172,6 +265,7 @@ export function App(): JSX.Element {
     });
     setSelectedTreePath(null);
     setSelectedBranchRef(null);
+    setDiffState({ kind: "idle" });
   };
 
   const applySnapshotState = (snapshotState: RepositorySnapshotState): void => {
@@ -258,8 +352,7 @@ export function App(): JSX.Element {
   const snapshotError = loadState.snapshotState.error;
   const flatTree = flattenTree(loadState.snapshotState.snapshot?.tree ?? []);
   const branchGroups = loadState.snapshotState.snapshot?.branches ?? { local: [], remote: [] };
-  const selectedTreeNode =
-    flatTree.find((entry) => entry.node.path === selectedTreePath)?.node ?? flatTree[0]?.node ?? null;
+  const selectedTreeNode = resolveSelectedTreeNode(flatTree, selectedTreePath);
   const allBranches = [...branchGroups.local, ...branchGroups.remote];
   const selectedBranch =
     allBranches.find((branch) => branch.refName === selectedBranchRef) ??
@@ -297,7 +390,9 @@ export function App(): JSX.Element {
         <header className="shell-topbar">
           <div className="shell-brand">
             <h1 className="shell-title">{loadState.bootstrap.appName}</h1>
-            <p className="shell-subtitle">Phase 1 is live: Git-backed tree, branches, and debounced refresh flow.</p>
+            <p className="shell-subtitle">
+              Phase 2 is live: Git-backed tree, richer branch state, and a native diff inspector with raw fallback.
+            </p>
           </div>
           <div className="shell-badges" aria-label="Application metadata">
             <span className="shell-badge">{APP_SHELL_VERSION}</span>
@@ -439,8 +534,7 @@ export function App(): JSX.Element {
               <span className="panel-eyebrow">Workspace</span>
               <h2 className="panel-title">Repository Tree</h2>
               <p className="panel-copy">
-                Git-visible files are merged into one virtual tree so tracked, changed, untracked, and ignored paths
-                stay in one place.
+                Git-visible files stay in one working tree with familiar explorer rows, indentation, and status overlays.
               </p>
             </header>
             <div className="panel-content">
@@ -448,7 +542,7 @@ export function App(): JSX.Element {
             </div>
             <p className="panel-note">
               {selectedTreeNode
-                ? `${selectedTreeNode.path} is selected and ready for the Phase 2 diff viewer.`
+                ? `${selectedTreeNode.path} is selected and ready for the diff inspector.`
                 : "Open a repository to inspect the tree model."}
             </p>
           </article>
@@ -458,8 +552,8 @@ export function App(): JSX.Element {
               <span className="panel-eyebrow">Branches</span>
               <h2 className="panel-title">Branch State</h2>
               <p className="panel-copy">
-                Local and remote refs stay separated, with current-branch, upstream, ahead/behind, and gone-upstream
-                state preserved.
+                The current branch is emphasized first, with local and remote refs grouped underneath and tracking
+                state kept explicit.
               </p>
             </header>
             <div className="panel-content">
@@ -475,27 +569,22 @@ export function App(): JSX.Element {
           <article className="panel-card" data-panel="diff-inspector">
             <header className="panel-header">
               <span className="panel-eyebrow">Phase 2</span>
-              <h2 className="panel-title">Diff Inspector Next</h2>
+              <h2 className="panel-title">Diff Inspector</h2>
               <p className="panel-copy">
-                Phase 2 will turn the selected file and branch context into a structured diff reader with raw fallback.
+                Structured hunks stay visible for supported diffs, while the raw Git output remains available for every
+                selection.
               </p>
             </header>
             <div className="panel-content panel-content-dark">
-              <div className="phase-next-card">
-                <strong>Selected File</strong>
-                <span>{selectedTreeNode?.path ?? "No file selected yet."}</span>
-              </div>
-              <div className="phase-next-card">
-                <strong>Selected Branch</strong>
-                <span>{selectedBranch ? formatBranchSelection(selectedBranch) : "No branch selected yet."}</span>
-              </div>
-              <div className="phase-next-card">
-                <strong>Phase 2 Focus</strong>
-                <span>Unified diff parsing, raw fallback, binary handling, and readable hunk presentation.</span>
-              </div>
+              {renderDiffPanel({
+                snapshotState: loadState.snapshotState,
+                selectedTreeNode,
+                selectedBranch,
+                diffState,
+              })}
             </div>
             <p className="panel-note panel-note-dark">
-              Diff rendering stays intentionally deferred until the repository state layer is trustworthy.
+              {describeDiffPanelNote(selectedTreeNode, selectedBranch, diffState)}
             </p>
           </article>
         </section>
@@ -555,9 +644,18 @@ function renderTreePanel(
             setSelectedPath(entry.node.path);
           }}
         >
-          <span className="tree-row-marker">{entry.node.kind === "directory" ? "Dir" : changeBadge(entry.node.change)}</span>
-          <span className="tree-row-name">{entry.node.name}</span>
-          <span className="tree-row-path">{entry.node.path}</span>
+          <span className="tree-row-rail" aria-hidden="true" />
+          <span className="tree-row-indent" aria-hidden="true">
+            {renderTreeIndent(entry.depth)}
+          </span>
+          <span className="tree-row-icon" aria-hidden="true">
+            {entry.node.kind === "directory" ? "▸" : fileIcon(entry.node.name)}
+          </span>
+          <span className="tree-row-main">
+            <span className="tree-row-name">{entry.node.name}</span>
+            <span className="tree-row-path">{entry.node.path}</span>
+          </span>
+          <span className="tree-row-change">{changeBadge(entry.node.change)}</span>
         </button>
       ))}
     </div>
@@ -582,8 +680,31 @@ function renderBranchPanel(
     return <PanelEmpty message="No branches were returned for the current snapshot." />;
   }
 
+  const currentBranch = branchGroups.local.find((branch) => branch.isCurrent) ?? null;
+
   return (
     <div className="branch-groups">
+      {currentBranch ? (
+        <section className="branch-current-card">
+          <span className="branch-current-eyebrow">Current Branch</span>
+          <div className="branch-current-heading">
+            <strong>{currentBranch.name}</strong>
+            <span>{formatBranchSelection(currentBranch)}</span>
+          </div>
+          <div className="branch-current-badges">
+            <span className="branch-state-badge" data-tone="current">
+              current
+            </span>
+            <span className="branch-state-badge">{currentBranch.upstreamName ?? "no upstream"}</span>
+            {currentBranch.aheadCount > 0 ? (
+              <span className="branch-state-badge">ahead {currentBranch.aheadCount}</span>
+            ) : null}
+            {currentBranch.behindCount > 0 ? (
+              <span className="branch-state-badge">behind {currentBranch.behindCount}</span>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
       <BranchGroup
         title="Local"
         branches={branchGroups.local}
@@ -638,9 +759,29 @@ function BranchGroup({
             onClick={() => {
               onSelect(branch.refName);
             }}
-          >
-            <span className="branch-row-name">{branch.name}</span>
+        >
+          <span className="branch-row-rail" aria-hidden="true" />
+          <span className="branch-row-main">
+            <span className="branch-row-name">
+              <span className="branch-row-icon" aria-hidden="true">
+                {branch.kind === "local" ? "⑂" : "◌"}
+              </span>
+              {branch.name}
+            </span>
             <span className="branch-row-meta">{formatBranchSelection(branch)}</span>
+          </span>
+          <span className="branch-row-badges">
+            {branch.isCurrent ? (
+              <span className="branch-state-badge" data-tone="current">
+                current
+              </span>
+            ) : null}
+            {branch.kind === "local" && branch.upstreamName ? (
+              <span className="branch-state-badge">{branch.upstreamName}</span>
+            ) : null}
+            {branch.aheadCount > 0 ? <span className="branch-state-badge">+{branch.aheadCount}</span> : null}
+            {branch.behindCount > 0 ? <span className="branch-state-badge">-{branch.behindCount}</span> : null}
+          </span>
           </button>
         ))}
       </div>
@@ -666,11 +807,260 @@ function PanelEmpty({ message }: { message: string }): JSX.Element {
   );
 }
 
+function renderTreeIndent(depth: number): string {
+  return depth > 0 ? "│".repeat(depth) : "";
+}
+
+function fileIcon(name: string): string {
+  if (name.endsWith(".ts") || name.endsWith(".tsx")) {
+    return "{}";
+  }
+
+  if (name.endsWith(".md")) {
+    return "≣";
+  }
+
+  if (name.endsWith(".json") || name.endsWith(".yml") || name.endsWith(".yaml")) {
+    return "⋯";
+  }
+
+  return "•";
+}
+
+function renderDiffPanel({
+  snapshotState,
+  selectedTreeNode,
+  selectedBranch,
+  diffState,
+}: {
+  snapshotState: RepositorySnapshotState;
+  selectedTreeNode: TreeNode | null;
+  selectedBranch: BranchSummary | null;
+  diffState: DiffLoadState;
+}): JSX.Element {
+  if (!snapshotState.activeRepository) {
+    return <PanelEmpty message="Open a repository to inspect a diff." />;
+  }
+
+  if (!selectedTreeNode) {
+    return <PanelEmpty message="Select a file from the repository tree to request a diff." />;
+  }
+
+  if (selectedTreeNode.kind === "directory") {
+    return <PanelEmpty message="Directory selections stay in the tree panel. Choose a file to inspect its diff." />;
+  }
+
+  if (diffState.kind === "loading") {
+    return (
+      <div className="diff-panel">
+        <div className="diff-file-header">
+          <div>
+            <span className="diff-file-kicker">Loading Diff</span>
+            <strong>{diffState.request.filePath}</strong>
+          </div>
+          <span className="branch-state-badge">{selectedBranch?.name ?? "working tree"}</span>
+        </div>
+        <div className="diff-panel-body">
+          <PanelLoading message="Git is generating the selected file diff." />
+        </div>
+      </div>
+    );
+  }
+
+  if (diffState.kind === "error") {
+    return (
+      <div className="diff-panel">
+        <div className="diff-file-header">
+          <div>
+            <span className="diff-file-kicker">Diff Error</span>
+            <strong>{diffState.requestPath ?? selectedTreeNode.path}</strong>
+          </div>
+          <span className="branch-state-badge" data-tone="danger">
+            error
+          </span>
+        </div>
+        <div className="diff-panel-body">
+          <ErrorBanner title={diffState.error.summary} detail={diffState.error.detail} error={diffState.error} />
+        </div>
+      </div>
+    );
+  }
+
+  if (diffState.kind !== "loaded") {
+    return (
+      <div className="diff-panel">
+        <div className="diff-file-header">
+          <div>
+            <span className="diff-file-kicker">Ready</span>
+            <strong>{selectedTreeNode.path}</strong>
+          </div>
+          <span className="branch-state-badge">{selectedBranch?.name ?? "working tree"}</span>
+        </div>
+        <div className="diff-panel-body">
+          <PanelEmpty message="The diff inspector is waiting for a valid file selection." />
+        </div>
+      </div>
+    );
+  }
+
+  const { document } = diffState.result;
+  const primaryFile = document.files[0] ?? null;
+
+  return (
+    <div className="diff-panel">
+      <div className="diff-file-header">
+        <div>
+          <span className="diff-file-kicker">Selected File</span>
+          <strong>{primaryFile?.displayPath ?? selectedTreeNode.path}</strong>
+          <span className="diff-file-meta">
+            {primaryFile ? describeDiffFile(primaryFile) : describeEmptyDiffState(selectedTreeNode.change)}
+          </span>
+        </div>
+        <div className="diff-file-badges">
+          <span className="branch-state-badge">{changeBadge(selectedTreeNode.change)}</span>
+          <span className="branch-state-badge">{document.parseState}</span>
+        </div>
+      </div>
+      <div className="diff-panel-body">
+        {document.parseState === "empty" ? (
+          <PanelEmpty message={describeEmptyDiffState(selectedTreeNode.change)} />
+        ) : null}
+        {document.parseState !== "empty" && primaryFile ? (
+          <div className="diff-file-section">
+            <div className="diff-file-summary">
+              <div className="diff-file-summary-paths">
+                <span>{primaryFile.oldPath}</span>
+                <span>{primaryFile.newPath}</span>
+              </div>
+              <div className="diff-file-summary-markers">
+                {primaryFile.markers.map((marker) => (
+                  <span className="branch-state-badge" key={marker}>
+                    {marker}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {primaryFile.hunks.length > 0 ? (
+              <div className="diff-hunk-list">
+                {primaryFile.hunks.map((hunk) => (
+                  <section className="diff-hunk" key={`${primaryFile.displayPath}-${hunk.header}`}>
+                    <header className="diff-hunk-header">{hunk.header}</header>
+                    <div className="diff-line-list">
+                      {hunk.lines.map((line, index) => (
+                        <div className="diff-line" data-kind={line.kind} key={`${hunk.header}-${index}-${line.text}`}>
+                          <span className="diff-line-number">{line.oldLineNumber ?? ""}</span>
+                          <span className="diff-line-number">{line.newLineNumber ?? ""}</span>
+                          <span className="diff-line-code">{renderDiffLinePrefix(line)}{line.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ) : (
+              <PanelEmpty message="Git returned file-level metadata without text hunks for this selection." />
+            )}
+          </div>
+        ) : null}
+      </div>
+      <details className="diff-fallback" open={document.parseState === "partial" || document.parseState === "raw"}>
+        <summary>
+          Raw Git Output
+          {document.warnings.length > 0 ? ` (${document.warnings.length} parser warning${document.warnings.length === 1 ? "" : "s"})` : ""}
+        </summary>
+        {document.warnings.length > 0 ? (
+          <div className="diff-warning-list">
+            {document.warnings.map((warning) => (
+              <span className="diff-warning" key={warning}>
+                {warning}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <pre className="diff-raw-output">{document.rawText || "(Git returned no text output for this selection.)"}</pre>
+      </details>
+    </div>
+  );
+}
+
+function describeDiffPanelNote(
+  selectedTreeNode: TreeNode | null,
+  selectedBranch: BranchSummary | null,
+  diffState: DiffLoadState
+): string {
+  if (!selectedTreeNode) {
+    return "Choose a file to inspect the native git diff output for the current working tree.";
+  }
+
+  if (selectedTreeNode.kind === "directory") {
+    return `${selectedTreeNode.path} is a directory. Select a file to inspect its diff.`;
+  }
+
+  if (diffState.kind === "loading") {
+    return `Loading the diff for ${selectedTreeNode.path}${selectedBranch ? ` on ${selectedBranch.name}` : ""}.`;
+  }
+
+  if (diffState.kind === "error") {
+    return diffState.error.summary;
+  }
+
+  if (diffState.kind === "loaded") {
+    return `Diff requested from Git for ${selectedTreeNode.path}${selectedBranch ? ` while ${selectedBranch.name} stays selected.` : "."}`;
+  }
+
+  return `${selectedTreeNode.path} is selected and ready for Git-backed diff inspection.`;
+}
+
+function describeDiffFile(file: DiffFile): string {
+  if (file.markers.length === 0) {
+    return file.changeType;
+  }
+
+  return `${file.changeType} • ${file.markers.join(", ")}`;
+}
+
+function describeEmptyDiffState(change: FileChangeKind): string {
+  if (change === "untracked") {
+    return "Git does not emit a working tree diff for an untracked file until it is added or staged.";
+  }
+
+  if (change === "ignored") {
+    return "Ignored files stay visible in the tree, but they do not produce a repository diff.";
+  }
+
+  return "Git returned no text diff for the selected file.";
+}
+
+function renderDiffLinePrefix(line: DiffLine): string {
+  switch (line.kind) {
+    case "addition":
+      return "+";
+    case "deletion":
+      return "-";
+    case "context":
+      return " ";
+    case "meta":
+      return "";
+  }
+}
+
 function flattenTree(nodes: readonly TreeNode[], depth = 0): FlatTreeNode[] {
   return nodes.flatMap((node) => [
     { node, depth },
     ...flattenTree(node.children, depth + 1),
   ]);
+}
+
+function resolveSelectedTreeNode(
+  flatTree: readonly FlatTreeNode[],
+  selectedPath: string | null
+): TreeNode | null {
+  return (
+    flatTree.find((entry) => entry.node.path === selectedPath)?.node ??
+    flatTree.find((entry) => entry.node.kind === "file")?.node ??
+    flatTree[0]?.node ??
+    null
+  );
 }
 
 function changeBadge(change: FileChangeKind): string {

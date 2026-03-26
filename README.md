@@ -4,7 +4,7 @@ Cross-platform Git client focused on a clear repository tree, branches, push/pul
 
 ## Development
 
-The repo now includes the completed Phase 0 and Phase 1 slices: typed IPC contracts, system Git detection, repository open flow, session lifecycle, Git-backed repository snapshot reads, tree and branch rendering, debounced refresh hints, structured Git logging, and Electron Forge packaging on top of Electron, React, Vite, TypeScript, ESLint, and Vitest.
+The repo now includes the completed Phase 0, Phase 1, and Phase 2 slices: typed IPC contracts, system Git detection, repository open flow, session lifecycle, Git-backed repository snapshot reads, denser tree and branch rendering, native diff reads with structured parsing and raw fallback, structured Git logging, and Electron Forge packaging on top of Electron, React, Vite, TypeScript, ESLint, and Vitest.
 
 Use Node `20.9+` with `npm`.
 
@@ -44,6 +44,9 @@ Current implemented behaviors:
 - the tree panel renders tracked, changed, untracked, deleted, and ignored paths from a virtual Git-backed tree
 - the branch panel renders local and remote refs with current-branch, upstream, and ahead/behind context
 - snapshot refresh can be requested manually and is also fed by debounced watcher hints
+- the diff panel now requests file diffs through typed IPC and renders structured hunks with line numbers, metadata markers, and inline raw fallback
+- untracked and ignored file selections stay explicit instead of pretending Git produced a patch
+- the tree now reads like a working-tree explorer and the branch area emphasizes current branch state before local and remote groups
 - Git CLI executions emit structured logs with command context for debugging
 - the shell explicitly renders the Phase 1 state matrix for empty, loading, ready, refreshing, stale, and error repository states
 - Electron renderer builds now use relative asset paths so `npm run app:start` and packaged `loadFile(...)` builds render correctly
@@ -52,7 +55,8 @@ Phase status:
 
 - Phase 0: complete on March 26, 2026
 - Phase 1: complete on March 26, 2026
-- Phase 2: planned in `docs/phase-2-plan.md`
+- Phase 2: complete on March 26, 2026
+- Phase 3: planned in `docs/phase-3-plan.md`
 
 Platform notes:
 
@@ -69,6 +73,7 @@ Primary docs:
 - [docs/phase-0-plan.md](docs/phase-0-plan.md)
 - [docs/phase-1-plan.md](docs/phase-1-plan.md)
 - [docs/phase-2-plan.md](docs/phase-2-plan.md)
+- [docs/phase-3-plan.md](docs/phase-3-plan.md)
 - [docs/product-plan.md](docs/product-plan.md)
 - [docs/stakeholder-brief.md](docs/stakeholder-brief.md)
 - [AGENTS.md](AGENTS.md)

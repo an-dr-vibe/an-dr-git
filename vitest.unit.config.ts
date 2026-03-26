@@ -11,6 +11,9 @@ export default defineConfig({
       reportsDirectory: "coverage",
       reporter: ["text", "json-summary", "html"],
       include: [
+        "src/shared/contracts/repository-diff.ts",
+        "src/main/repository/repository-diff-parser.ts",
+        "src/main/repository/repository-diff-service.ts",
         "src/shared/domain/app-shell-layout.ts",
         "src/shared/domain/phase-1-state-matrix.ts",
         "src/shared/domain/project-scaffold.ts",

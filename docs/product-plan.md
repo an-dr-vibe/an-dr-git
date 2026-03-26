@@ -89,7 +89,8 @@ Current status as of March 26, 2026:
 
 - Phase 0 is complete.
 - Phase 1 is complete.
-- Phase 2 is the active next milestone.
+- Phase 2 is complete.
+- Phase 3 is the active next milestone.
 
 ### Phase 0: Foundations
 
@@ -193,6 +194,10 @@ Execution plan:
 
 - `docs/phase-2-plan.md`
 
+Status:
+
+- Complete on March 26, 2026.
+
 Primary owners:
 
 - architect for parser boundaries
@@ -223,6 +228,10 @@ Exit criteria:
 - missing upstream and rejected push cases are explained clearly
 - non-fast-forward pull is not hidden or normalized away
 - write operations remain serialized per repository
+
+Execution plan:
+
+- `docs/phase-3-plan.md`
 
 Primary owners:
 
@@ -431,5 +440,5 @@ If these appear, the project is moving in the wrong direction:
 
 1. Roadmap and MVP boundary approved by the main stakeholder.
 2. Treat Phase 0 and Phase 1 as completed baseline capabilities rather than planned work.
-3. Execute the Phase 2 backlog in `docs/phase-2-plan.md`.
-4. Keep the shell layout, tree selection model, and diff-panel brief aligned while the diff pipeline is added.
+3. Execute the Phase 3 backlog in `docs/phase-3-plan.md`.
+4. Keep the branch emphasis, sync affordances, and raw-failure visibility aligned while pull and push are added.

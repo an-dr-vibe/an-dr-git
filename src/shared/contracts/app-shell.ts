@@ -1,5 +1,7 @@
 import { z, type ZodError, type ZodType } from "zod";
 
+import type { RepositoryDiffRequest, RepositoryDiffResult } from "./repository-diff.js";
+
 export const APP_SHELL_CHANNELS = {
   getBootstrap: "app-shell:get-bootstrap",
   getGitStatus: "app-shell:get-git-status",
@@ -7,6 +9,7 @@ export const APP_SHELL_CHANNELS = {
   pickAndOpenRepository: "app-shell:pick-and-open-repository",
   getRepositorySnapshot: "app-shell:get-repository-snapshot",
   refreshRepositorySnapshot: "app-shell:refresh-repository-snapshot",
+  getRepositoryDiff: "app-shell:get-repository-diff",
 } as const;
 
 export const appShellPlatformSchema = z.enum(["darwin", "linux", "win32"]);
@@ -41,6 +44,7 @@ export const appShellErrorCodeSchema = z.enum([
   "PATH_NOT_ACCESSIBLE",
   "NOT_A_REPOSITORY",
   "UNSUPPORTED_REPOSITORY",
+  "SESSION_NOT_FOUND",
   "UNEXPECTED",
 ]);
 
@@ -205,6 +209,7 @@ export interface AppShellApi {
   pickAndOpenRepository(): Promise<OpenRepositoryResult>;
   getRepositorySnapshot(): Promise<RepositorySnapshotState>;
   refreshRepositorySnapshot(): Promise<RepositorySnapshotState>;
+  getRepositoryDiff(request: RepositoryDiffRequest): Promise<RepositoryDiffResult>;
 }
 
 export function formatValidationError(error: ZodError): string {

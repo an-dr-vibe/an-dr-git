@@ -388,6 +388,9 @@ Current foundations decision:
 - Phase 1 adds a shared `RepositorySnapshot` contract plus explicit read and refresh IPC calls for the active repository.
 - The main process now owns snapshot building, cached snapshot state, and debounced watcher hints; the renderer only consumes validated snapshot state.
 - Repository identity is refreshed from Git-backed snapshot reads so HEAD changes stay authoritative after branch movement.
+- Phase 2 adds a separate shared diff contract and explicit diff IPC request path rather than extending the snapshot service.
+- The main process now owns a dedicated `DiffService` that resolves selected-file diffs per repository session and preserves raw Git output alongside parsed hunks.
+- Unified diff parsing stays intentionally narrow: file headers, hunks, line markers, binary markers, and explicit partial/raw fallback are supported, but unsupported syntax never replaces the raw Git text.
 
 ## Git Client Specific Concerns
 
@@ -518,6 +521,14 @@ Implemented in Phase 1:
 - Unified diff command pipeline
 - Diff parser
 - File diff viewer with raw fallback
+
+Implemented in Phase 2:
+
+- shared diff contracts for selected-file diff requests, parse-state reporting, and structured file/hunk/line documents
+- session-aware diff reads through a dedicated main-process `DiffService`
+- native `git diff --no-ext-diff --submodule=short --find-renames --find-copies -- <path>` execution for tree-selected files
+- structured renderer diff panel with line numbers, metadata markers, binary handling, and raw fallback disclosure
+- denser tree and branch presentation tuned for the new diff workflow without changing the main/renderer boundary
 
 ### Milestone 3: Push + Pull
 
