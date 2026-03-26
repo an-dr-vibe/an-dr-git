@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import type {
   AppShellBootstrap,
+  AppShellApi,
   BranchSummary,
   FileChangeKind,
   GitStatus,
@@ -42,6 +43,14 @@ const EMPTY_SNAPSHOT_STATE: RepositorySnapshotState = {
   refreshedAt: null,
 };
 
+function getAppShell(): AppShellApi {
+  if (window.appShell === undefined) {
+    throw new Error("Preload bridge is unavailable. The app shell API was not exposed to the renderer.");
+  }
+
+  return window.appShell;
+}
+
 export function App(): JSX.Element {
   const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
   const [repositoryPath, setRepositoryPath] = useState("");
@@ -50,9 +59,15 @@ export function App(): JSX.Element {
   const [selectedBranchRef, setSelectedBranchRef] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    window.__AN_DR_GIT_RENDERER_STATE__ = loadState.kind;
+    document.documentElement.dataset.appShellState = loadState.kind;
+  }, [loadState.kind]);
 
-    void Promise.all([window.appShell.getBootstrap(), window.appShell.getGitStatus() ])
+  useEffect(() => {
+    let cancelled = false;
+    const appShell = getAppShell();
+
+    void Promise.all([appShell.getBootstrap(), appShell.getGitStatus() ])
       .then(([bootstrap, gitStatus]) => {
         if (!cancelled) {
           setLoadState({
@@ -87,7 +102,7 @@ export function App(): JSX.Element {
     let cancelled = false;
 
     const refreshSnapshot = async (): Promise<void> => {
-      const snapshotState = await window.appShell.refreshRepositorySnapshot();
+      const snapshotState = await getAppShell().refreshRepositorySnapshot();
 
       if (!cancelled) {
         applySnapshotState(snapshotState);
@@ -113,7 +128,7 @@ export function App(): JSX.Element {
 
     let cancelled = false;
     const pollHandle = window.setInterval(() => {
-      void window.appShell
+      void getAppShell()
         .getRepositorySnapshot()
         .then((snapshotState) => {
           if (!cancelled) {
@@ -177,7 +192,7 @@ export function App(): JSX.Element {
     setIsOpeningRepository(true);
 
     try {
-      applyOpenRepositoryResult(await window.appShell.openRepository({ repositoryPath: path }));
+      applyOpenRepositoryResult(await getAppShell().openRepository({ repositoryPath: path }));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Repository open failed.";
       setLoadState({ kind: "error", message });
@@ -190,7 +205,7 @@ export function App(): JSX.Element {
     setIsOpeningRepository(true);
 
     try {
-      applyOpenRepositoryResult(await window.appShell.pickAndOpenRepository());
+      applyOpenRepositoryResult(await getAppShell().pickAndOpenRepository());
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Repository selection failed.";
       setLoadState({ kind: "error", message });
@@ -205,7 +220,7 @@ export function App(): JSX.Element {
     }
 
     try {
-      applySnapshotState(await window.appShell.refreshRepositorySnapshot());
+      applySnapshotState(await getAppShell().refreshRepositorySnapshot());
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Repository refresh failed.";
       setLoadState({ kind: "error", message });

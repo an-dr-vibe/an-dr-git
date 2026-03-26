@@ -2,7 +2,7 @@ import { BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 
 function getPreloadPath(): string {
-  return fileURLToPath(new URL("../preload.js", import.meta.url));
+  return fileURLToPath(new URL("../preload.cjs", import.meta.url));
 }
 
 function getRendererIndexPath(): string {

@@ -28,8 +28,8 @@ Default repo policy:
 App shell commands:
 
 - `npm run app:start` builds the app and launches the Electron shell for manual testing
-- `npm run app:smoke` builds the app and runs a launch smoke test that exits automatically
-- `npm run package:verify` creates a repo-local packaged app under `artifacts/forge/` and smoke-launches the packaged executable
+- `npm run app:smoke` builds the app and runs a renderer-ready smoke test that exits automatically only after the shell becomes visible
+- `npm run package:verify` creates a repo-local packaged app under `artifacts/forge/` and smoke-launches the packaged executable with the same renderer-ready verification
 - `npm run make:verify:win` creates a Windows installer under `artifacts/forge/make/` and verifies the installer artifact exists
 - `npm run make:verify:deb` creates a Debian installer under `artifacts/forge/make/` and verifies the `.deb` artifact exists
 

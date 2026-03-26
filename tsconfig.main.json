@@ -15,6 +15,7 @@
   },
   "include": [
     "src/main/**/*.ts",
+    "src/main/**/*.cts",
     "src/main/**/*.d.ts",
     "src/shared/**/*.ts"
   ]
