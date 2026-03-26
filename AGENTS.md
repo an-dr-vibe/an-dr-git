@@ -75,6 +75,7 @@ The main agent reads this file first and acts as the orchestrator.
 
 ### Team Roles
 
+- `.agents/product-manager.instruciton.md`
 - `.agents/architect.instruciton.md`
 - `.agents/developer.instruciton.md`
 - `.agents/tester.instruciton.md`
@@ -83,6 +84,12 @@ The main agent reads this file first and acts as the orchestrator.
 - `.agents/ux-designer.instruciton.md`
 
 ### Invocation Guidance
+
+Use `product-manager` when:
+
+- scope needs to be shaped into milestones, slices, or priorities
+- multiple valid implementation paths exist and sequencing needs to be decided
+- planning, acceptance framing, or cross-role coordination is the main problem
 
 Use `architect` when:
 
@@ -159,12 +166,13 @@ Use `ux-designer` when:
 
 For any non-trivial task:
 
-1. restate the task in terms of the current milestone
-2. identify impacted modules
-3. consult the relevant role files
-4. implement the smallest vertical slice that can be tested
-5. verify with unit, integration, or manual evidence
-6. document any architectural deviation in `docs/architecture.md`
+1. use `product-manager` to frame the task in terms of milestone, scope, and priority when planning is needed
+2. restate the task in terms of the current milestone
+3. identify impacted modules
+4. consult the relevant role files
+5. implement the smallest vertical slice that can be tested
+6. verify with unit, integration, or manual evidence
+7. document any architectural deviation in `docs/architecture.md`
 
 ## Definition Of Done
 
@@ -195,6 +203,15 @@ Examples:
 4. diff parsing and rendering
 5. push and pull flows
 6. cohesive UI system and UX patterns for repository navigation
+
+## Planning Ownership
+
+`product-manager` owns planning quality for the repo:
+
+- turns broad requests into milestones and vertical slices
+- proposes sequencing across architecture, implementation, UX, UI, testing, and review
+- defines what is in scope now versus later
+- keeps work aligned with product goals without leaking repo policy into the role file
 
 ## What Must Stay Out Of Role Files
 
