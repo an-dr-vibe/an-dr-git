@@ -223,6 +223,7 @@ Before a change is considered ready, it should pass:
 - typecheck
 - unit tests
 - coverage gate
+- artifact build and verification
 
 ### Coverage Gate
 
@@ -287,8 +288,9 @@ The repo standardizes on these local/CI entry points:
 - `pwsh ./scripts/check-docs.ps1`
 - `pwsh ./scripts/coverage-gate.ps1`
 - `pwsh ./scripts/quality-gate.ps1`
+- `npm run package:verify`
 
-`quality-gate.ps1` is the primary entry point. It should be the default local check and the default CI check.
+`quality-gate.ps1` is the primary entry point. It should be the default local check and the default CI check, and by default it should build and verify the repo-local artifact when the current host supports the packaged app flow.
 
 ## Future Tooling Expectations
 

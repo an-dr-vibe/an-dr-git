@@ -260,6 +260,7 @@ Current entry points:
 - `scripts/check-docs.ps1`
 - `scripts/coverage-gate.ps1`
 - `scripts/quality-gate.ps1`
+- `npm run package:verify`
 
 ## Definition Of Done
 
@@ -270,6 +271,7 @@ A task is done when:
 - tests cover the new behavior or the gap is clearly documented
 - required feedback loops for code, UI, UX, and docs are closed
 - a fresh artifact has been built for the delivered code unless the user waived it
+- the default quality gate has built and verified the repo-local artifact when the host supports it
 - user-visible failures include enough context to debug
 - docs are updated when contracts or operating rules change
 

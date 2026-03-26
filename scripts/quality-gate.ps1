@@ -7,7 +7,8 @@ param(
     [double]$Lines = 90,
     [switch]$SkipIntegration,
     [switch]$SkipE2E,
-    [switch]$SkipCoverage
+    [switch]$SkipCoverage,
+    [switch]$SkipArtifact
 )
 
 Set-StrictMode -Version Latest
@@ -60,6 +61,10 @@ if (-not $SkipIntegration) {
 
 if (-not $SkipE2E) {
     Invoke-PackageScript -RepoRoot $repoRoot -PackageJson $packageJson -PackageManager $packageManagerCommand -ScriptName "test:e2e" -Required $false
+}
+
+if (-not $SkipArtifact) {
+    Invoke-PackageScript -RepoRoot $repoRoot -PackageJson $packageJson -PackageManager $packageManagerCommand -ScriptName "package:verify" -Required $true
 }
 
 Write-Success "Quality gate passed."

@@ -20,6 +20,11 @@ Local setup:
 - `npm run make:verify:win`
 - `pwsh ./scripts/quality-gate.ps1`
 
+Default repo policy:
+
+- `pwsh ./scripts/quality-gate.ps1` is expected to build and verify a repo-local artifact by default
+- `npm run package:verify` is the standard packaged-artifact command
+
 App shell commands:
 
 - `npm run app:start` builds the app and launches the Electron shell for manual testing
