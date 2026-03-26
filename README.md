@@ -41,6 +41,7 @@ Current implemented behaviors:
 - snapshot refresh can be requested manually and is also fed by debounced watcher hints
 - Git CLI executions emit structured logs with command context for debugging
 - the shell explicitly renders the Phase 1 state matrix for empty, loading, ready, refreshing, stale, and error repository states
+- Electron renderer builds now use relative asset paths so `npm run app:start` and packaged `loadFile(...)` builds render correctly
 
 Phase status:
 

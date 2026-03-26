@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -82,6 +82,22 @@ function getPackagedExecutablePath() {
   throw new Error("Packaged executable was not found under artifacts/forge.");
 }
 
+function verifyRendererAssetPaths() {
+  const rendererIndexPath = resolve(repositoryRoot, "dist", "renderer", "index.html");
+
+  if (!existsSync(rendererIndexPath)) {
+    throw new Error("Renderer index.html was not found under dist/renderer.");
+  }
+
+  const rendererIndexContent = readFileSync(rendererIndexPath, "utf8");
+
+  if (rendererIndexContent.includes('src="/assets/') || rendererIndexContent.includes('href="/assets/')) {
+    throw new Error(
+      "Renderer build contains root-relative asset paths. Packaged Electron builds require relative asset paths."
+    );
+  }
+}
+
 function verifyWindowsInstaller() {
   const installerFiles = findFiles(
     resolve(forgeOutputDirectory, "make"),
@@ -108,6 +124,8 @@ function verifyDebianInstaller() {
 }
 
 async function main() {
+  verifyRendererAssetPaths();
+
   switch (mode) {
     case "package": {
       const executablePath = getPackagedExecutablePath();
