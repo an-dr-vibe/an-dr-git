@@ -406,6 +406,6 @@ If these appear, the project is moving in the wrong direction:
 ## Immediate Next Planning Steps
 
 1. Roadmap and MVP boundary approved by the main stakeholder.
-2. Convert Phase 0 into an implementation backlog.
+2. Convert Phase 0 into an implementation backlog in `docs/phase-0-plan.md`.
 3. Create the first shell, repository session, and IPC contracts.
 4. Create the shell layout, navigation, repo-tab model, and design-token brief before detailed UI implementation begins.

@@ -21,6 +21,7 @@ The same principle applies to code, UI, UX, and documentation.
 3. Local and CI entry points should use cross-platform PowerShell scripts executed with `pwsh`.
 4. User-visible behavior changes must update both developer docs and user docs.
 5. Coverage is a gate, not a nice-to-have.
+6. After each step or slice, there must be a buildable, runnable, verifiable artifact that the stakeholder can test.
 
 ## Development Principles
 
@@ -80,6 +81,23 @@ Code should be:
 - easy to test and change
 
 Avoid cleverness that reduces maintainability.
+
+### Buildable Steps
+
+Every planned slice should end in an artifact that is:
+
+- buildable
+- runnable
+- verifiable
+- reviewable by the stakeholder
+
+This means the team should avoid long stretches of invisible progress.
+
+Expected standard:
+
+- each slice produces something that can be executed or directly validated
+- partial infrastructure work should still leave the repo in a working state
+- if a slice cannot produce a testable artifact, the slice is too large or incorrectly shaped
 
 ### Documentation As Code
 
@@ -296,6 +314,7 @@ Recommended future additions:
 - do not close UI work without explicit state verification
 - do not close UX work without failure-path verification
 - do not defer docs to a later cleanup task
+- do not leave a slice in a non-runnable or non-verifiable state
 
 ### For Reviewers
 
@@ -306,3 +325,4 @@ Recommended future additions:
 
 - plan work in slices that can actually complete the loop
 - avoid scope that creates work which cannot be verified inside the same milestone
+- shape slices so the stakeholder can run and test the result after each step

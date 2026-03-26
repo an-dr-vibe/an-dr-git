@@ -8,6 +8,7 @@ Primary docs:
 - [docs/architecture.md](docs/architecture.md)
 - [docs/development-workflow.md](docs/development-workflow.md)
 - [docs/documentation-policy.md](docs/documentation-policy.md)
+- [docs/phase-0-plan.md](docs/phase-0-plan.md)
 - [docs/product-plan.md](docs/product-plan.md)
 - [docs/stakeholder-brief.md](docs/stakeholder-brief.md)
 - [AGENTS.md](AGENTS.md)
