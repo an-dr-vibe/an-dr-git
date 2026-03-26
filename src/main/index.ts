@@ -24,7 +24,7 @@ async function waitForRendererShell(mainWindow: Electron.BrowserWindow): Promise
       true
     )) as { rendererState: string | null; bodyTextLength: number };
 
-    if (state.rendererState !== null && state.bodyTextLength > 0) {
+    if (state.rendererState === "ready" && state.bodyTextLength > 0) {
       return;
     }
 
