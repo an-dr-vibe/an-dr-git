@@ -35,6 +35,16 @@ Phase 2 shipped with these repo-local outcomes:
 - a denser repository tree and more visual branch layout tuned for the diff workflow
 - coverage expanded to the real Phase 2 modules with unit coverage in the 80-90% target band
 
+## Slice 2.5 Verification Record
+
+Quality gate: `pwsh ./scripts/quality-gate.ps1` passed on March 26, 2026.
+
+Coverage: 90.14% branches / 98.22% statements across measured Phase 2 modules (quality gate default threshold: 90%).
+
+Packaged artifact: `artifacts/forge/an-dr-git-win32-x64/an-dr-git.exe` (173 MB, verified by `npm run package:verify`).
+
+Reviewer findings: No blocking issues found. Architecture boundary is clean. Edge cases (binary, rename, copy, mode-change, no-newline, partial, empty) all have explicit states and tests. Residual non-blocking risks documented: no `--cached` diff path (out of scope), no row virtualization for large diffs, diff panel keyboard navigation deferred.
+
 ## Non-Goals
 
 Do not expand into these during Phase 2:

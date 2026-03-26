@@ -34,18 +34,52 @@ Do not expand into these during Phase 3:
 - commit graph or branch-topology visualization
 - background auto-sync behavior
 
+## Architecture Decisions
+
+These decisions must be in place before implementation starts:
+
+### Sync State Is Derived Client-Side
+
+The snapshot already carries `head.upstreamName`, `head.aheadCount`, `head.behindCount`, and `branches.local[].trackingStatus`. A pure `deriveRepositorySyncState(snapshot)` helper in `src/shared/domain/` computes the sync state from that data. No new IPC channel is needed for reads.
+
+Pull and push are the only new IPC calls.
+
+### Write Queue Required For Pull And Push
+
+Pull and push are write operations. Both must go through `session.runOperation("write", ...)` in the sync service, consistent with the per-repository serialization model.
+
+### Remote Name For Upstream Setup
+
+When pushing to a branch with no upstream:
+
+- if `head.upstreamName` is present but tracking status is "gone", report the error explicitly and do not push.
+- if `head.upstreamName` is absent, the renderer derives the remote name from the snapshot's remote branches or falls back to `"origin"`. The renderer passes `{ remote, branch }` explicitly in the `PushRequest`; the service never guesses.
+
+### IPC Surface
+
+New channels added to `APP_SHELL_CHANNELS` and `AppShellApi`:
+
+- `pullRepository: "app-shell:pull-repository"` — takes `{ sessionId }`, returns `RepositoryPullResult`
+- `pushRepository: "app-shell:push-repository"` — takes `{ sessionId, setUpstream? }`, returns `RepositoryPushResult`
+
+### Coverage Config
+
+`vitest.unit.config.ts` must include `src/shared/contracts/repository-sync.ts` and `src/main/repository/repository-sync-service.ts` in its coverage include list.
+
 ## Deliverables
 
 Phase 3 must deliver:
 
-- shared sync domain types under `src/shared`
-- typed IPC request/response for sync state, pull, and push
-- main-process sync service using native Git CLI commands
-- current-branch upstream resolution and missing-upstream detection
+- shared sync contracts under `src/shared/contracts/repository-sync.ts`
+- `deriveRepositorySyncState` helper in `src/shared/domain/`
+- typed IPC request/response for pull and push only (sync state is derived client-side)
+- main-process sync service using native Git CLI commands, with write-queue serialization
+- current-branch upstream resolution with explicit missing and gone states
 - pull flow using `git pull --ff-only`
-- push flow using `git push` and explicit upstream setup when needed
+- push flow using `git push` and explicit `--set-upstream <remote> <branch>` when remote is passed
 - renderer sync affordances integrated into the branch area
 - explicit progress, success, warning, and failure states with raw stderr visibility
+- `vitest.unit.config.ts` updated to include sync modules in coverage measurement
 
 ## Backlog Order
 
@@ -53,25 +87,28 @@ Phase 3 must deliver:
 
 Goal:
 
-Define the shared sync-state model and typed IPC surface.
+Define the shared sync-state model, derivation helper, and typed IPC surface for pull and push.
 
 Deliverables:
 
-- `RepositorySyncState`
-- `PullRequest`
-- `PushRequest`
-- sync IPC contracts and runtime validation
+- `RepositorySyncState` discriminated union (no-repository, detached, unborn, no-upstream, gone-upstream, in-sync, ahead, behind, diverged)
+- `deriveRepositorySyncState(snapshot)` pure function in `src/shared/domain/`
+- `RepositoryPullRequest` / `RepositoryPullResult`
+- `RepositoryPushRequest` / `RepositoryPushResult`
+- sync IPC channels added to `APP_SHELL_CHANNELS` and `AppShellApi`
+- runtime validation for all request and result types
 
 Acceptance criteria:
 
-- renderer can request sync state only through validated IPC
-- detached HEAD, missing upstream, gone upstream, and ahead/behind state remain explicit
-- later sync actions can reuse the same contracts without renderer-side Git inference
+- sync state is a pure derivation from snapshot data — no new read IPC channel
+- detached HEAD, unborn, no-upstream, gone-upstream, in-sync, ahead, behind, and diverged are explicit discriminants
+- pull and push request types carry only what the service needs to execute safely
+- `PushRequest` carries an optional `setUpstream: { remote, branch }` field so the service never guesses the remote
 
 Verification:
 
 - unit tests for sync contract validation
-- integration test for sync-state happy path and invalid-payload handling
+- unit tests for `deriveRepositorySyncState` covering all discriminants
 
 ### Slice 3.2: Pull Flow
 
@@ -127,19 +164,42 @@ Integrate actionable sync state into the current shell without turning it into a
 
 Deliverables:
 
-- branch-area sync affordances
+- branch-area sync affordances (pull button, push button, upstream label)
 - progress, success, warning, and failure messaging
 - raw-output disclosure for failed sync commands
+
+Sync UI State Matrix:
+
+| State | Pull enabled | Push enabled | Notes |
+|---|---|---|---|
+| no-repository | no | no | No session |
+| loading / no-snapshot | no | no | Snapshot not yet ready |
+| detached HEAD | no | no | Show explicit message |
+| unborn branch | no | no | Show explicit message |
+| no-upstream | no | yes | Push sets upstream; show remote/branch preview |
+| gone-upstream | no | no | Upstream deleted; show explicit message |
+| in-sync | no | no | Both disabled; show up-to-date message |
+| ahead | no | yes | Local commits to push |
+| behind | yes | no | Remote commits to pull |
+| diverged | yes | yes | Both enabled; warn before push |
+| pull in-flight | no | no | Both disabled during operation |
+| push in-flight | no | no | Both disabled during operation |
+| pull success | no | no | Snapshot refresh triggered; transient success message |
+| push success | no | no | Snapshot refresh triggered; transient success message |
+| pull error | no | yes | Show raw stderr; re-enable push |
+| push error | yes | no | Show raw stderr; re-enable pull |
 
 Acceptance criteria:
 
 - branch state and sync actions stay visually connected
 - risky states remain explicit before the user acts
+- raw stderr is always shown on error — never replaced with a generic message
 - the shell still feels like one coherent tool instead of separate sync dialogs
+- a snapshot refresh is triggered automatically after a successful pull or push
 
 Verification:
 
-- state-matrix walkthrough for sync states
+- state-matrix walkthrough for all rows above
 - manual keyboard verification for branch-to-sync actions
 - screenshot or manual visual verification on a real repository
 
