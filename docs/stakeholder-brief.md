@@ -66,9 +66,17 @@ The product should grow only after the core trust model is proven.
 
 Desktop shell, system Git detection, repository open flow, IPC, logging, and operation safety.
 
+Status:
+
+- Complete on March 26, 2026.
+
 ### Phase 1: Tree And Branches
 
 Repository tree, branch visibility, refresh model, and core repository-state clarity.
+
+Status:
+
+- Planned next. See `docs/phase-1-plan.md` for the execution backlog.
 
 ### Phase 2: Diff
 
@@ -156,11 +164,15 @@ The plan will fail if:
 
 Approved. Keep the first implementation focused on:
 
-- foundations
 - tree and branches
 - diff
 - push and pull
 - interface quality
 - a tab-ready repository session model, even if tab polish lands late in MVP
+
+Immediate execution note:
+
+- The repo now has the completed Phase 0 shell, Git detection, repository-open flow, session lifecycle, operation queue, structured logging, and packaging pipeline.
+- The next delivery target is Phase 1 tree and branch visibility without expanding into diff or sync work early.
 
 This is the shortest path to a credible product instead of a shallow feature list.

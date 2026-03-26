@@ -6,6 +6,10 @@ This document turns Phase 0 from a milestone into an executable backlog.
 
 Phase 0 is the foundations phase. Its job is to create the runtime, workflow, and safety boundaries that every later feature depends on.
 
+Status:
+
+- Completed on March 26, 2026.
+
 This phase is complete only when:
 
 - the app shell exists
@@ -184,7 +188,7 @@ Verification:
 - integration tests with real local repos
 - manual verification of valid and invalid open flows
 
-### Slice 0.6: Repository Session Model
+### Slice 0.6: Repository Session Model — Done
 
 Goal:
 
@@ -209,7 +213,13 @@ Verification:
 - unit tests for session lifecycle
 - integration tests for open/activate/close behavior
 
-### Slice 0.7: Operation Queue And Logging
+Implemented:
+
+- `RepositorySession` now owns lifecycle state and the per-repository operation queue entry point
+- `RepositoryRegistry` now supports create/reactivate, list, activate-by-session, and close behavior
+- reopening the same repository reuses the existing session identity
+
+### Slice 0.7: Operation Queue And Logging — Done
 
 Goal:
 
@@ -233,7 +243,13 @@ Verification:
 - unit tests for queue behavior
 - integration tests for serialized write execution
 
-### Slice 0.8: Foundation UX/UI Pass
+Implemented:
+
+- repository sessions now own a write-serializing operation queue
+- Git detection and repository-open commands emit structured log records
+- command logs include command, args, working directory, duration, exit code, timeout state, and repository context
+
+### Slice 0.8: Foundation UX/UI Pass — Done
 
 Goal:
 
@@ -257,6 +273,12 @@ Verification:
 - state-matrix walkthrough
 - keyboard verification
 - visual review against the product direction
+
+Implemented:
+
+- the renderer now exposes an explicit Phase 0 state matrix covering startup, Git attention, no-repo, open-in-progress, opened, invalid-path/repository, and unexpected-error states
+- shell copy and cards distinguish no-repo, Git-required, and repository-error conditions instead of collapsing them into one generic placeholder
+- the session container and panel frame remain tab-ready without requiring a redesign for Phase 1
 
 ### Slice 0.9: Packaging And Verification Artifacts — Done
 
@@ -319,6 +341,16 @@ Phase 0 is done only when all of these are true:
 - structured logging exists for command execution and failures
 - repo-local packaged app artifacts can be generated and run for verification
 - Windows and Debian installer pipelines are configured and documented
+
+Completion audit:
+
+- shell exists, launches, and preserves the typed preload boundary
+- system Git detection is structured and logged
+- repository open validates path, repository root, git-dir, and HEAD state through the main process
+- repository sessions are explicit, reusable, and closable
+- per-repository write serialization exists as session-owned infrastructure
+- the renderer explicitly surfaces the required shell state matrix
+- repo-local packaged artifacts and installer entry points remain in place
 
 ## Test Plan For Phase 0
 

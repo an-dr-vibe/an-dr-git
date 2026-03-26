@@ -4,7 +4,7 @@ Cross-platform Git client focused on a clear repository tree, branches, push/pul
 
 ## Development
 
-The repo now includes the Phase 0 foundations shell plus typed IPC contracts, system Git detection, and the first repository open flow on top of Electron, React, Vite, TypeScript, ESLint, Vitest, and Electron Forge packaging.
+The repo now includes the completed Phase 0 foundations shell plus typed IPC contracts, system Git detection, repository open flow, session lifecycle, operation-queue scaffolding, structured Git logging, and Electron Forge packaging on top of Electron, React, Vite, TypeScript, ESLint, and Vitest.
 
 Use Node `20.9+` with `npm`.
 
@@ -33,7 +33,15 @@ Current Phase 0 behaviors:
 - preload exposes typed `getBootstrap`, `getGitStatus`, `openRepository`, and `pickAndOpenRepository` APIs only
 - system Git detection reports structured ready, missing, or unusable states to the renderer
 - repository open validates the path through the main process and returns structured errors for invalid paths and non-repositories
-- successful repository open creates a session-owned repository identity with root path, git dir path, and HEAD state
+- successful repository open creates or reactivates a session-owned repository identity with root path, git dir path, and HEAD state
+- repository sessions now have explicit lifecycle handling in the main process registry
+- Git CLI executions emit structured logs with command context for debugging
+- the shell explicitly renders the Phase 0 state matrix required for startup, Git attention, no-repo, open-in-progress, opened, invalid-repository, and unexpected-error states
+
+Phase status:
+
+- Phase 0: complete
+- Phase 1: planned in `docs/phase-1-plan.md`
 
 Platform notes:
 
@@ -48,6 +56,7 @@ Primary docs:
 - [docs/development-workflow.md](docs/development-workflow.md)
 - [docs/documentation-policy.md](docs/documentation-policy.md)
 - [docs/phase-0-plan.md](docs/phase-0-plan.md)
+- [docs/phase-1-plan.md](docs/phase-1-plan.md)
 - [docs/product-plan.md](docs/product-plan.md)
 - [docs/stakeholder-brief.md](docs/stakeholder-brief.md)
 - [AGENTS.md](AGENTS.md)

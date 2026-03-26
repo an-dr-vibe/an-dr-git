@@ -3,14 +3,16 @@ import { spawn } from "node:child_process";
 export interface CommandExecutionResult {
   readonly command: string;
   readonly args: readonly string[];
+  readonly cwd: string | undefined;
   readonly stdout: string;
   readonly stderr: string;
   readonly exitCode: number | null;
   readonly durationMs: number;
+  readonly timedOut: boolean;
   readonly spawnError: NodeJS.ErrnoException | null;
 }
 
-interface RunCommandOptions {
+export interface RunCommandOptions {
   readonly cwd?: string;
   readonly env?: NodeJS.ProcessEnv;
   readonly timeoutMs?: number;
@@ -33,6 +35,7 @@ export function runCommand(
     const stdoutChunks: Buffer[] = [];
     const stderrChunks: Buffer[] = [];
     let settled = false;
+    let timedOut = false;
     let spawnError: NodeJS.ErrnoException | null = null;
 
     const finalize = (exitCode: number | null): void => {
@@ -45,10 +48,12 @@ export function runCommand(
       resolve({
         command,
         args,
+        cwd: options.cwd,
         stdout: Buffer.concat(stdoutChunks).toString("utf8"),
         stderr: Buffer.concat(stderrChunks).toString("utf8"),
         exitCode,
         durationMs: Date.now() - startedAt,
+        timedOut,
         spawnError,
       });
     };
@@ -73,6 +78,7 @@ export function runCommand(
     if (options.timeoutMs) {
       setTimeout(() => {
         if (!settled) {
+          timedOut = true;
           child.kill();
         }
       }, options.timeoutMs).unref();

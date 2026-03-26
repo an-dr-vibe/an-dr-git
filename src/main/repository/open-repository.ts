@@ -6,7 +6,7 @@ import type {
   OpenRepositoryRequest,
   OpenRepositoryResult,
 } from "../../shared/contracts/app-shell.js";
-import { runCommand } from "../git/run-command.js";
+import { executeGitCommand } from "../git/execute-git-command.js";
 import { GitExecutableResolver } from "../git/git-executable-resolver.js";
 import { RepositoryRegistry } from "./repository-registry.js";
 
@@ -204,10 +204,13 @@ export class RepositoryOpener {
   }
 
   async #runGit(repositoryPath: string, args: readonly string[]) {
-    return runCommand(this.#gitExecutableResolver.getCommandName(), args, {
+    return executeGitCommand(this.#gitExecutableResolver.getCommandName(), args, {
       cwd: repositoryPath,
       env: this.#gitExecutableResolver.getCommandEnv(),
       timeoutMs: 10_000,
+      operationKind: "read",
+      operationName: `repository-open:${args[0] ?? "git-command"}`,
+      repositoryPath,
     });
   }
 

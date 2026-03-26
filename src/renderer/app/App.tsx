@@ -7,6 +7,10 @@ import type {
   RepositoryIdentity,
 } from "../../shared/contracts/app-shell.js";
 import { getAppShellPanels } from "../../shared/domain/app-shell-layout.js";
+import {
+  getPhase0StateMatrix,
+  resolvePhase0State,
+} from "../../shared/domain/phase-0-state-matrix.js";
 
 type LoadState =
   | { kind: "loading" }
@@ -79,6 +83,13 @@ export function App(): JSX.Element {
 
   const repositoryActionDisabled = loadState.gitStatus.kind !== "ready" || isOpeningRepository;
   const lastError = loadState.lastOpenResult?.kind === "error" ? loadState.lastOpenResult.error : null;
+  const currentPhase0State = resolvePhase0State({
+    loadStateKind: loadState.kind,
+    gitStatus: loadState.kind === "ready" ? loadState.gitStatus : undefined,
+    activeRepository: loadState.kind === "ready" ? loadState.activeRepository !== null : false,
+    isOpeningRepository,
+    lastOpenResult: loadState.kind === "ready" ? loadState.lastOpenResult : null,
+  });
 
   const applyOpenRepositoryResult = (result: OpenRepositoryResult): void => {
     setLoadState((currentState) => {
@@ -250,6 +261,32 @@ export function App(): JSX.Element {
                 : "Open a repository to create the first session-owned entity in the main process."}
             </p>
           </article>
+        </section>
+
+        <section className="state-matrix" aria-label="Phase 0 state matrix">
+          <header className="state-matrix-header">
+            <div>
+              <span className="status-label">State Matrix</span>
+              <h2 className="state-matrix-title">Phase 0 coverage is explicit</h2>
+            </div>
+            <p className="state-matrix-copy">
+              The shell keeps every required foundation state visible so later feature slices do not
+              have to redesign the frame.
+            </p>
+          </header>
+          <div className="state-matrix-grid">
+            {getPhase0StateMatrix().map((state) => (
+              <article
+                className="state-matrix-card"
+                data-current={state.id === currentPhase0State}
+                key={state.id}
+              >
+                <span className="state-matrix-chip">{state.id === currentPhase0State ? "Current" : "Ready"}</span>
+                <h3 className="state-matrix-card-title">{state.title}</h3>
+                <p className="state-matrix-card-copy">{state.description}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         {lastError ? (

@@ -105,6 +105,30 @@ describe("app shell handlers integration", () => {
     expect(repositoryRegistry.getActive()?.sessionId).toBe(result.repository.sessionId);
   });
 
+  it("reuses the existing session when the same repository is opened again", async () => {
+    const repositoryPath = await createRepositoryFixture();
+    const repositoryRegistry = new RepositoryRegistry();
+    const handlers = createAppShellHandlers({
+      isPackaged: false,
+      gitExecutableResolver: new GitExecutableResolver(),
+      repositoryRegistry,
+      pickRepositoryPath: async () => null,
+    });
+
+    const firstResult = await handlers.openRepository({ repositoryPath });
+    const secondResult = await handlers.openRepository({ repositoryPath });
+
+    expect(firstResult.kind).toBe("opened");
+    expect(secondResult.kind).toBe("opened");
+
+    if (firstResult.kind !== "opened" || secondResult.kind !== "opened") {
+      return;
+    }
+
+    expect(secondResult.repository.sessionId).toBe(firstResult.repository.sessionId);
+    expect(repositoryRegistry.list()).toHaveLength(1);
+  });
+
   it("fails clearly when the repository path is missing", async () => {
     const missingPath = join(await createTempDirectory("an-dr-git-missing-parent-"), "missing");
     const handlers = createAppShellHandlers({

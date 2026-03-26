@@ -85,6 +85,11 @@ These are explicitly out of scope until the core is stable:
 
 The roadmap is intentionally phased so each milestone delivers a usable vertical slice instead of disconnected infrastructure.
 
+Current status as of March 26, 2026:
+
+- Phase 0 is complete.
+- Phase 1 is the active next milestone.
+
 ### Phase 0: Foundations
 
 Goal:
@@ -111,6 +116,10 @@ Exit criteria:
 - command execution is stable on Windows and Linux
 - failure states show enough raw detail to debug
 - packaging output exists for stakeholder verification and installer distribution
+
+Status:
+
+- Complete on March 26, 2026.
 
 Primary owners:
 
@@ -141,6 +150,10 @@ Exit criteria:
 - branch panel accurately reflects detached, unborn, and missing-upstream states
 - refresh behavior is predictable and debounced
 - layout supports fast scanning on real repositories
+
+Execution plan:
+
+- `docs/phase-1-plan.md`
 
 Primary owners:
 

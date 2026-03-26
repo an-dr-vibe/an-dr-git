@@ -1,7 +1,7 @@
 import type { AppShellPanelDefinition } from "../contracts/app-shell.js";
 
 export const APP_SHELL_NAME = "an-dr-git";
-export const APP_SHELL_VERSION = "phase-0-slice-0.5";
+export const APP_SHELL_VERSION = "phase-0-complete";
 export const SESSION_CONTAINER_LABEL = "Repository Sessions";
 
 export const APP_SHELL_PANELS: readonly AppShellPanelDefinition[] = [

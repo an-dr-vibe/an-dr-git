@@ -180,7 +180,25 @@ For any non-trivial task:
 4. consult the relevant role files
 5. implement the smallest vertical slice that can be tested
 6. verify with unit, integration, or manual evidence
-7. document any architectural deviation in `docs/architecture.md`
+7. build a repo-local artifact the stakeholder can try immediately after the code delivery
+8. document any architectural deviation in `docs/architecture.md`
+
+### Artifact Delivery Rule
+
+Every code delivery must produce a stakeholder-usable artifact unless the user explicitly says to skip it.
+
+Default expectation:
+
+- build a repo-local runnable packaged app artifact
+- write it under `artifacts/forge/`
+- prefer `npm run package:verify` on hosts that support the packaged app flow
+- report the resulting artifact path in the final handoff
+
+If the host cannot produce the default artifact, the agent must:
+
+- explain the platform constraint clearly
+- build the closest supported artifact for that host
+- report what was built and where it was written
 
 ## Feedback Loop Policy
 
@@ -251,6 +269,7 @@ A task is done when:
 - error paths are handled explicitly
 - tests cover the new behavior or the gap is clearly documented
 - required feedback loops for code, UI, UX, and docs are closed
+- a fresh artifact has been built for the delivered code unless the user waived it
 - user-visible failures include enough context to debug
 - docs are updated when contracts or operating rules change
 

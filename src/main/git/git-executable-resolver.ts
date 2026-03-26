@@ -2,7 +2,7 @@ import {
   type AppShellError,
   type GitStatus,
 } from "../../shared/contracts/app-shell.js";
-import { runCommand } from "./run-command.js";
+import { executeGitCommand } from "./execute-git-command.js";
 
 export interface ResolvedGitExecutable {
   readonly executablePath: string;
@@ -39,9 +39,11 @@ export class GitExecutableResolver {
       return this.#cachedStatus;
     }
 
-    const versionResult = await runCommand(this.#gitCommand, ["--version"], {
+    const versionResult = await executeGitCommand(this.#gitCommand, ["--version"], {
       env: this.#env,
       timeoutMs: 10_000,
+      operationKind: "system",
+      operationName: "detect-git-version",
     });
 
     if (versionResult.spawnError) {
@@ -128,9 +130,11 @@ export class GitExecutableResolver {
         ? { command: "where.exe", args: [this.#gitCommand] }
         : { command: "which", args: [this.#gitCommand] };
 
-    const result = await runCommand(locator.command, locator.args, {
+    const result = await executeGitCommand(locator.command, locator.args, {
       env: this.#env,
       timeoutMs: 10_000,
+      operationKind: "system",
+      operationName: "locate-git-executable",
     });
 
     if (result.exitCode === 0 && result.stdout.trim().length > 0) {

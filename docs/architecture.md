@@ -383,6 +383,8 @@ Current foundations decision:
 - Every IPC response is validated against the shared schema before the renderer consumes it.
 - User-visible failures are returned as structured errors with summary, detail, optional path context, and optional raw Git stderr.
 - Opening a repository creates or reactivates a session-owned `RepositoryIdentity` in the main process registry so later tab support can extend the same model.
+- Repository sessions now own a per-repository operation queue so later write actions can serialize safely without redesigning session state.
+- Every Git execution now emits a structured log record with operation name, operation kind, command, args, working directory, duration, exit code, timeout status, and repository context.
 
 ## Git Client Specific Concerns
 
@@ -482,12 +484,16 @@ Fixtures:
 - Repository open flow
 - Logging and operation queue
 
-Implemented so far:
+Implemented in Phase 0:
 
 - shared Zod-backed IPC schemas for bootstrap, Git detection, and repository open flows
 - `GitExecutableResolver` using system `git --version` plus executable-path lookup
 - repository open validation using `git rev-parse` for top-level, git-dir, and HEAD state
 - initial main-process repository registry that owns active repository session identity
+- explicit `RepositorySession` lifecycle and tab-ready registry behavior
+- per-repository write-serialization queue attached to repository sessions
+- structured Git command logging for detection and repository-open flows
+- explicit Phase 0 shell state matrix in the renderer
 
 ### Milestone 1: Tree + Branches
 
